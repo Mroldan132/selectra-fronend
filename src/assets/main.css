@@ -1,0 +1,20 @@
+/* main.css SIMPLIFICADO */
+@import './base.css'; /* Mantén tus reseteos y variables base */
+
+/* Estilos muy básicos para html y body si son necesarios */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Importante para que v-app y fill-height funcionen bien */
+  font-family: 'Roboto', sans-serif; /* O la fuente que prefieras con Vuetify */
+  line-height: 1.5;
+}
+
+#app {
+  height: 100%; /* Permite que #app ocupe toda la altura */
+}
+
+a {
+  text-decoration: none;
+  transition: 0.4s;
+}

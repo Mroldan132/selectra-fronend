@@ -4,7 +4,7 @@ import AuthService from '@/services/authService';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        user: JSON.parse(localStorage.getItem('user')), // Token, rol, nombre de usuario, etc.
+        user: JSON.parse(localStorage.getItem('user')),
         status: { loggedIn: !!localStorage.getItem('user') },
         loginError: null,
     }),

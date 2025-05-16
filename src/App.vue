@@ -81,13 +81,12 @@ const mostrarNavegacionPrincipal = computed(() => {
 
 const handleLogout = () => {
   authStore.logout();
-  drawer.value = false; // Cierra el drawer al hacer logout
+  drawer.value = false;
   router.push({ name: 'login' });
 };
 
 // --- Definición de Items del Menú por Rol ---
 const menuItems = computed(() => {
-  debugger
   const userRole = authStore.getUserRole; // Asegúrate que este getter devuelva el string del rol
   if (!userRole) return [];
 
@@ -95,33 +94,33 @@ const menuItems = computed(() => {
     { title: 'Inicio', icon: 'mdi-home-outline', to: { name: 'home' } },
     // Puedes añadir más items comunes a todos los roles aquí
   ];
-  if (userRole === 'Administrador') {
-    items.push(
-      { title: 'Gestionar Usuarios', icon: 'mdi-account-group-outline', to: { name: 'gestionUsuarios' } }, // Necesitas crear esta ruta/vista
-      { title: 'Configuración General', icon: 'mdi-cog-outline', to: { name: 'configuracionGeneral' } }, // Ejemplo
-      { title: 'Ver Todos Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'todosRequerimientosAdmin' } },
-      { title: 'Ver Todas Ofertas', icon: 'mdi-briefcase-search-outline', to: { name: 'todasOfertasAdmin' } }
-    );
-  }
+  // if (userRole === 'Administrador') {
+  //   items.push(
+  //     { title: 'Gestionar Usuarios', icon: 'mdi-account-group-outline', to: { name: 'gestionUsuarios' } }, // Necesitas crear esta ruta/vista
+  //     { title: 'Configuración General', icon: 'mdi-cog-outline', to: { name: 'configuracionGeneral' } }, // Ejemplo
+  //     { title: 'Ver Todos Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'todosRequerimientosAdmin' } },
+  //     { title: 'Ver Todas Ofertas', icon: 'mdi-briefcase-search-outline', to: { name: 'todasOfertasAdmin' } }
+  //   );
+  // }
 
-  if (userRole === 'RRHH' || userRole === 'Administrador') { // RRHH puede heredar de Admin o tener propios
-    items.push(
-      { title: 'Gestionar Ofertas', icon: 'mdi-briefcase-edit-outline', to: { name: 'gestionarOfertas' } }, // Crear/ver/editar ofertas
-      { title: 'Ver Postulantes', icon: 'mdi-account-search-outline', to: { name: 'verPostulantes' } }
-    );
-  }
+  // if (userRole === 'RRHH' || userRole === 'Administrador') { // RRHH puede heredar de Admin o tener propios
+  //   items.push(
+  //     { title: 'Gestionar Ofertas', icon: 'mdi-briefcase-edit-outline', to: { name: 'gestionarOfertas' } }, // Crear/ver/editar ofertas
+  //     { title: 'Ver Postulantes', icon: 'mdi-account-search-outline', to: { name: 'verPostulantes' } }
+  //   );
+  // }
 
-  if (userRole === 'JefeAprobador' || userRole === 'Administrador') {
-     if (!items.some(item => item.to.name === 'crearRequerimiento')) { // Evitar duplicados si ya lo tiene RRHH/Admin
-        items.push({ title: 'Crear Requerimiento', icon: 'mdi-text-box-plus-outline', to: { name: 'crearRequerimiento' } });
-     }
-    items.push(
-      { title: 'Mis Requerimientos', icon: 'mdi-file-document-outline', to: { name: 'misRequerimientos' } },
-      { title: 'Pendientes de Aprobar', icon: 'mdi-file-check-outline', to: { name: 'pendientesAprobacion' } }
-    );
-  }
+  // if (userRole === 'JefeAprobador' || userRole === 'Administrador') {
+  //    if (!items.some(item => item.to.name === 'crearRequerimiento')) { // Evitar duplicados si ya lo tiene RRHH/Admin
+  //       items.push({ title: 'Crear Requerimiento', icon: 'mdi-text-box-plus-outline', to: { name: 'crearRequerimiento' } });
+  //    }
+  //   items.push(
+  //     { title: 'Mis Requerimientos', icon: 'mdi-file-document-outline', to: { name: 'misRequerimientos' } },
+  //     { title: 'Pendientes de Aprobar', icon: 'mdi-file-check-outline', to: { name: 'pendientesAprobacion' } }
+  //   );
+  // }
 
-  if (userRole === 'Solicitante') { // Asumimos que 'Solicitante' es un rol específico
+  if (userRole === 'Solicitante') { 
      if (!items.some(item => item.to.name === 'gestionRequerimientos')) {
         items.push({ title: 'Lista de Requerimientos', icon: 'mdi-text-box-plus-outline', to: { name: 'gestionRequerimientos' } });
      };
@@ -132,15 +131,13 @@ const menuItems = computed(() => {
     );
   }
 
-
-  // Filtrar duplicados por 'to.name' si diferentes roles comparten la misma ruta/título
   const uniqueMenuItems = [];
   const seenRoutes = new Set();
   for (const item of items) {
     if (item.to && item.to.name && !seenRoutes.has(item.to.name)) {
       uniqueMenuItems.push(item);
       seenRoutes.add(item.to.name);
-    } else if (!item.to || !item.to.name) { // Para items que no son rutas (ej. divisores)
+    } else if (!item.to || !item.to.name) {
         uniqueMenuItems.push(item);
     }
   }
@@ -160,7 +157,6 @@ watch(() => route.path, () => {
 </script>
 
 <style>
-/* Estilos globales o para asegurar que v-main ocupe espacio */
 html, body, #app, .v-application {
   height: 100%;
   margin: 0;
@@ -173,18 +169,11 @@ html, body, #app, .v-application {
 }
 .v-main {
   flex-grow: 1;
-  /* background-color: #f4f7f6;  Un fondo suave para el área de contenido */
 }
-/* Ajuste para que el contenido no quede debajo de la app-bar fija */
-/* .v-main {
-  padding-top: 64px !important; /* Altura de la v-app-bar estándar */
-/* } */
-
 .page-container {
-  height: 100%; /* Para que el fill-height de las vistas funcione bien */
+  height: 100%; 
 }
 
-/* Opcional: Personalizar el v-navigation-drawer */
 .v-navigation-drawer .v-list-item {
   margin-bottom: 4px;
 }

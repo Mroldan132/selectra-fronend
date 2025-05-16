@@ -33,12 +33,12 @@
           loading-text="Cargando requerimientos..."
         >
           <template v-slot:item.fechaCreacion="{ item }">
-            {{ formatFecha(item.raw.fechaCreacion) }}
+            {item.raw.fechaCreacion }
           </template>
 
           <template v-slot:item.estadoNombre="{ item }">
-            <v-chip :color="getEstadoColor(item.raw.estadoNombre)" small>
-              {{ item.raw.estadoNombre }}
+            <v-chip  small>
+              { item.raw.estadoNombre }
             </v-chip>
           </template>
 
@@ -58,7 +58,7 @@
             <v-tooltip location="top" text="Editar">
               <template v-slot:activator="{ props }">
                 <v-btn
-                  v-if="puedeEditar(item.raw.estadoNombre)"
+                
                   icon="mdi-pencil-outline"
                   variant="text"
                   color="warning"
@@ -121,12 +121,9 @@ const cargarRequerimientos = async () => {
   loadingTabla.value = true;
   errorTabla.value = '';
   try {
-    // Aquí decides qué endpoint llamar basado en el rol del usuario
-    // Por ahora, asumimos que se listan "Mis Requerimientos"
-    // Si es Admin/RRHH, podrías tener un endpoint para ver todos o con filtros.
-    if (authStore.isLoggedIn) { // Asegurarse que hay un usuario logueado
-         // TODO: Determinar qué endpoint usar según el rol.
-         // Por ahora, usamos misSolicitudes como ejemplo, pero podría ser un endpoint GET /api/RequerimientosPersonales general
+    
+    if (authStore.isLoggedIn) { 
+      
         listaRequerimientos.value = await RequerimientoService.getMisRequerimientos();
     }
   } catch (error) {
@@ -139,12 +136,13 @@ const cargarRequerimientos = async () => {
 
 onMounted(cargarRequerimientos);
 
-const formatFecha = (fechaISO) => { /* ... (tu función de formato de fecha) ... */
+const formatFecha = (fechaISO) => { 
   if (!fechaISO) return '';
   const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   return new Date(fechaISO).toLocaleDateString(undefined, options);
 };
-const getEstadoColor = (estadoNombre) => { /* ... (tu función de color de estado) ... */
+const getEstadoColor = (estadoNombre) => { 
+  console.log('Estado:', estadoNombre);
   if (estadoNombre?.toLowerCase().includes('pendiente')) return 'orange';
   if (estadoNombre?.toLowerCase().includes('aprobado')) return 'green';
   if (estadoNombre?.toLowerCase().includes('rechazado')) return 'red';
@@ -158,12 +156,9 @@ const verDetalle = (requerimientoId) => {
 };
 
 const puedeEditar = (estadoNombre) => {
-  // Lógica para determinar si se puede editar (ej. solo en estado "Pendiente" o "Borrador")
-  // También podrías verificar el rol del usuario aquí.
   const userRole = authStore.getUserRole;
   const estadosEditables = ['Pendiente', 'Borrador']; // Define tus estados editables
   return estadosEditables.includes(estadoNombre) // Y el usuario tiene permiso
-         // && (userRole === 'Solicitante' || userRole === 'Administrador' || userRole === 'RRHH');
 };
 
 const abrirModalNuevoRequerimiento = () => {

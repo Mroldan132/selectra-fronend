@@ -19,7 +19,7 @@
 
             <h3 class="text-h6 mb-3 primary--text">Acciones Rápidas:</h3>
             <v-list dense nav>
-              <v-list-item
+              <!-- <v-list-item
                 v-if="puedeCrearRequerimiento"
                 link
                 :to="{ name: 'crearRequerimiento' }"
@@ -27,8 +27,8 @@
                 color="primary"
               >
                 <v-list-item-title>Crear Nuevo Requerimiento</v-list-item-title>
-              </v-list-item>
-
+              </v-list-item> -->
+<!-- 
               <v-list-item
                 v-if="puedeVerMisRequerimientos"
                 link
@@ -36,8 +36,8 @@
                 color="primary"
               >
                 <v-list-item-title>Ver Mis Requerimientos</v-list-item-title>
-              </v-list-item>
-
+              </v-list-item> -->
+<!-- 
               <v-list-item
                 v-if="puedeAprobarRequerimientos"
                 link
@@ -45,8 +45,8 @@
                 color="primary"
               >
                 <v-list-item-title>Requerimientos Pendientes de Aprobar</v-list-item-title>
-                </v-list-item>
-
+                </v-list-item> -->
+<!-- 
               <v-list-item
                 v-if="esAdminORrhh"
                 link
@@ -54,7 +54,7 @@
                 color="primary"
               >
                 <v-list-item-title>Gestionar Usuarios</v-list-item-title>
-              </v-list-item>
+              </v-list-item> -->
               </v-list>
           </v-card-text>
 
@@ -85,7 +85,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
-// RouterLink no se importa explícitamente aquí porque usamos la prop :to en v-list-item y v-btn
 
 const authStore = useAuthStore();
 

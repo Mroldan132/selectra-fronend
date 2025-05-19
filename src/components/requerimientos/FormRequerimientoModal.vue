@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="visibleLocal" persistent max-width="800px" @click:outside="manejarCierreExterno">
     <v-card :loading="loadingForm">
-      <v-toolbar :color="modoEditar ? 'warning' : 'primary'" dark flat>
+      <v-toolbar :color="props.modoEditar ? 'warning darken-1' : 'primary'" dark flat>
         <v-toolbar-title>{{ tituloModal }}</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn icon dark @click="cerrar">
@@ -10,6 +10,16 @@
       </v-toolbar>
 
       <v-card-text class="pa-5">
+        <v-alert
+          v-if="estadoProcesadoInfo.esProcesado"
+          :type="estadoProcesadoInfo.color"
+          :prepend-icon="estadoProcesadoInfo.icon"
+          variant="tonal"
+          dense
+          class="mb-4"
+          :text="estadoProcesadoInfo.mensaje"
+        ></v-alert>
+
         <v-form @submit.prevent="guardarRequerimiento" ref="formModalRef">
           <v-row>
             <v-col cols="12" md="6">
@@ -23,6 +33,7 @@
                 variant="outlined"
                 density="comfortable"
                 required
+                :readonly="formularioDeshabilitadoPorEstado"
                 :disabled="loadingDropdowns"
               ></v-select>
             </v-col>
@@ -34,6 +45,7 @@
                 counter="250"
                 variant="outlined"
                 density="comfortable"
+                :readonly="formularioDeshabilitadoPorEstado"
                 required
               ></v-text-field>
             </v-col>
@@ -48,10 +60,11 @@
                 variant="outlined"
                 density="comfortable"
                 required
+                :readonly="formularioDeshabilitadoPorEstado"
                 :disabled="loadingDropdowns"
               ></v-select>
             </v-col>
-             <v-col cols="12" md="6">
+              <v-col cols="12" md="6">
               <v-select
                 v-model="requerimientoLocal.cargoId"
                 :items="cargos"
@@ -62,6 +75,7 @@
                 variant="outlined"
                 density="comfortable"
                 required
+                :readonly="formularioDeshabilitadoPorEstado"
                 :disabled="loadingDropdowns"
               ></v-select>
             </v-col>
@@ -73,6 +87,7 @@
                 :rules="[rules.required]"
                 variant="outlined"
                 density="comfortable"
+                :readonly="formularioDeshabilitadoPorEstado"
                 rows="3"
                 auto-grow
                 required
@@ -86,6 +101,7 @@
                 type="number" step="0.01" prefix="S/."
                 :rules="[rules.positiveNumber]"
                 variant="outlined" density="comfortable"
+                :readonly="formularioDeshabilitadoPorEstado"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
@@ -94,17 +110,22 @@
                 label="Fecha Deseada Ingreso (Opc.)"
                 type="date"
                 variant="outlined" density="comfortable"
+                :readonly="formularioDeshabilitadoPorEstado"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-select
+                <v-select
                 v-model="requerimientoLocal.jefeDestinoId"
                 :items="personalElegibleComoJefe"
-                item-title="nombreCompleto" item-value="personalId"
+                item-title="nombrePersonal"
+                item-value="personalId"
                 label="Jefe Destino (Opc.)"
-                variant="outlined" density="comfortable" clearable
+                variant="outlined"
+                density="comfortable"
+                clearable
+                :readonly="formularioDeshabilitadoPorEstado"
                 :disabled="loadingDropdowns"
-              ></v-select>
+                ></v-select>
             </v-col>
             </v-row>
           <v-alert v-if="errorForm" type="error" dense text class="mt-3 mb-0">
@@ -118,12 +139,12 @@
         <v-spacer></v-spacer>
         <v-btn color="grey-darken-1" text @click="cerrar" :disabled="loadingForm">Cancelar</v-btn>
         <v-btn
-          :color="modoEditar ? 'warning' : 'success'"
+          :color="props.modoEditar ? 'warning' : 'success'"
           @click="guardarRequerimiento"
           :loading="loadingForm"
-          :disabled="loadingForm"
+          :disabled="loadingForm || formularioDeshabilitadoPorEstado"
         >
-          {{ modoEditar ? 'Guardar Cambios' : 'Crear Requerimiento' }}
+          {{ props.modoEditar ? 'Guardar Cambios' : 'Crear Requerimiento' }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -136,18 +157,17 @@ import RequerimientoService from '@/services/RequerimientoService';
 
 const props = defineProps({
   visible: Boolean,
-  requerimientoParaEditar: Object, // Null si es para crear nuevo
+  requerimientoParaEditar: Object, 
   modoEditar: Boolean,
 });
 
 const emit = defineEmits(['cerrar', 'requerimientoGuardado']);
 
 const formModalRef = ref(null);
-const visibleLocal = ref(props.visible); // Para controlar la visibilidad internamente
+const visibleLocal = ref(props.visible);
 
-// Estado inicial para el formulario
 const initialState = () => ({
-  requerimientoId: null, // Importante para edición
+  requerimientoId: null, 
   tipoRequerimientoId: null,
   tituloRequerimiento: '',
   areaId: null,
@@ -156,11 +176,12 @@ const initialState = () => ({
   sueldoPropuesto: null,
   fechaDeseadaIngreso: null,
   jefeDestinoId: null,
+  // Asegúrate de incluir historialDeAprobaciones si es parte del modelo local y se carga
+  historialDeAprobaciones: [], 
 });
 
 const requerimientoLocal = reactive(initialState());
 
-// Datos para los dropdowns
 const tiposRequerimiento = ref([]);
 const areas = ref([]);
 const cargos = ref([]);
@@ -170,36 +191,120 @@ const loadingDropdowns = ref(false);
 const loadingForm = ref(false);
 const errorForm = ref('');
 
-// Reglas de validación de Vuetify
+// Computada para la información del estado procesado (para la alerta)
+const estadoProcesadoInfo = computed(() => {
+  const reqData = props.requerimientoParaEditar
+
+  if (!reqData || !reqData.historialDeAprobaciones || reqData.historialDeAprobaciones.length === 0) {
+    return { esProcesado: false, mensaje: '', color: 'info', icon: '' };
+  }
+  const ultimoEstado = reqData.historialDeAprobaciones[0]; 
+
+  if (ultimoEstado && ultimoEstado.codigoEstado) {
+    const estadoLower = ultimoEstado.codigoEstado.toLowerCase();
+    if (estadoLower.includes('apr')) { 
+      return { 
+        esProcesado: true, 
+        mensaje: 'Este requerimiento ya ha sido APROBADO y no puede ser modificado.', 
+        color: 'success',
+        icon: 'mdi-check-circle-outline'
+      };
+    }
+    if (estadoLower.includes('rec')) { 
+      return { 
+        esProcesado: true, 
+        mensaje: 'Este requerimiento ha sido RECHAZADO y no puede ser modificado.', 
+        color: 'error',
+        icon: 'mdi-close-circle-outline'
+      };
+    }
+  }
+  return { esProcesado: false, mensaje: '', color: 'info', icon: '' };
+});
+// Computada para deshabilitar/readonly el formulario y el botón de guardar
+const formularioDeshabilitadoPorEstado = computed(() => {
+  return estadoProcesadoInfo.value.esProcesado;
+});
+
+
 const rules = {
-  required: value => (value !== null && value !== undefined && value !== '') || 'Este campo es requerido.', // Mejorada para selects
-  maxLength: (length) => (value) => (!value || value.length <= length) || `Máximo ${length} caracteres.`,
-  positiveNumber: value => (value === null || value === undefined || value === '' || parseFloat(value) >= 0) || 'Debe ser un número positivo.',
+  required: value => {
+    if (formularioDeshabilitadoPorEstado.value) return true; // Si está deshabilitado, no validar
+    return (value !== null && value !== undefined && value !== '') || 'Este campo es requerido.'
+  },
+  maxLength: (length) => (value) => {
+    if (formularioDeshabilitadoPorEstado.value) return true;
+    return (!value || value.length <= length) || `Máximo ${length} caracteres.`
+  },
+  positiveNumber: value => {
+    if (formularioDeshabilitadoPorEstado.value) return true;
+    return (value === null || value === undefined || value === '' || parseFloat(value) >= 0) || 'Debe ser un número positivo.'
+  },
 };
 
-const tituloModal = computed(() => props.modoEditar ? 'Editar Requerimiento' : 'Crear Nuevo Requerimiento');
+const tituloModal = computed(() => {
+    if (formularioDeshabilitadoPorEstado.value) return 'Ver Detalle de Requerimiento';
+    return props.modoEditar ? 'Editar Requerimiento' : 'Crear Nuevo Requerimiento';
+});
 
-// Observa cambios en la prop 'visible' para mostrar/ocultar el modal
-watch(() => props.visible, (newVal) => {
+watch(() => props.visible, async (newVal) => {
   visibleLocal.value = newVal;
-  if (newVal) { // Cuando el modal se abre
-    errorForm.value = ''; // Limpiar errores
-    if (props.modoEditar && props.requerimientoParaEditar) {
-      // Si es modo edición, copia los datos del requerimiento a editar
-      Object.assign(requerimientoLocal, props.requerimientoParaEditar);
-      // Asegurar que los campos numéricos y de fecha se manejen bien si son null
-      requerimientoLocal.sueldoPropuesto = props.requerimientoParaEditar.sueldoPropuesto || null;
-      requerimientoLocal.fechaDeseadaIngreso = props.requerimientoParaEditar.fechaDeseadaIngreso ? props.requerimientoParaEditar.fechaDeseadaIngreso.split('T')[0] : null; // Formato YYYY-MM-DD para input date
-      requerimientoLocal.jefeDestinoId = props.requerimientoParaEditar.jefeDestinoId || null;
-    } else {
-      // Si es modo nuevo, resetea el formulario
+  if (newVal) {
+    errorForm.value = '';
+    formModalRef.value?.resetValidation(); 
+
+    if (props.modoEditar) {
+      if (props.requerimientoParaEditar && props.requerimientoParaEditar.requerimientoId) {
+        loadingForm.value = true;
+        try {
+          const datosCompletosDelServicio = await RequerimientoService.getRequerimientoPorId(props.requerimientoParaEditar.requerimientoId);
+          if (datosCompletosDelServicio) {
+            Object.assign(requerimientoLocal, datosCompletosDelServicio);
+            requerimientoLocal.sueldoPropuesto = datosCompletosDelServicio.sueldoPropuesto || null;
+            if (datosCompletosDelServicio.fechaDeseadaIngreso) {
+              if (typeof datosCompletosDelServicio.fechaDeseadaIngreso === 'string' && datosCompletosDelServicio.fechaDeseadaIngreso.includes('T')) {
+                requerimientoLocal.fechaDeseadaIngreso = datosCompletosDelServicio.fechaDeseadaIngreso.split('T')[0];
+              } else {
+                requerimientoLocal.fechaDeseadaIngreso = datosCompletosDelServicio.fechaDeseadaIngreso;
+              }
+            } else {
+              requerimientoLocal.fechaDeseadaIngreso = null;
+            }
+            requerimientoLocal.jefeDestinoId = datosCompletosDelServicio.jefeDestinoId || null;
+            requerimientoLocal.requerimientoId = datosCompletosDelServicio.requerimientoId || null;
+            // Asegurar que historialDeAprobaciones también se copie si viene del servicio
+            requerimientoLocal.historialDeAprobaciones = datosCompletosDelServicio.historialDeAprobaciones || [];
+          } else {
+            console.error('Modal: El servicio getRequerimientoPorId no devolvió datos para el ID:', props.requerimientoParaEditar.requerimientoId);
+            errorForm.value = 'No se pudieron cargar los detalles completos del requerimiento.';
+            Object.assign(requerimientoLocal, initialState());
+          }
+        } catch (err) {
+          console.error('Modal: Error al llamar a getRequerimientoPorId:', err);
+          errorForm.value = err.message || 'Error crítico al cargar los datos del requerimiento.';
+          Object.assign(requerimientoLocal, initialState()); 
+        } finally {
+          loadingForm.value = false;
+        }
+      } else {
+        // Si modoEditar es true pero no hay datos en requerimientoParaEditar, usar los datos de la prop directamente
+        // Esto es útil si la lista ya tiene todos los datos y no se hace una llamada a getRequerimientoPorId
+        if (props.requerimientoParaEditar) {
+            Object.assign(requerimientoLocal, props.requerimientoParaEditar);
+            // Asegurar que historialDeAprobaciones se copie si existe en la prop
+            requerimientoLocal.historialDeAprobaciones = props.requerimientoParaEditar.historialDeAprobaciones || [];
+        } else {
+            console.error('Modal: Se intentó editar pero props.requerimientoParaEditar no es válido.');
+            errorForm.value = 'No hay información válida del requerimiento para editar/ver.';
+            Object.assign(requerimientoLocal, initialState());
+        }
+      }
+    } else { 
       Object.assign(requerimientoLocal, initialState());
     }
-    formModalRef.value?.resetValidation(); // Resetea la validación
   }
 });
 
-// Cargar datos para los dropdowns
 const cargarDatosDropdown = async () => {
   loadingDropdowns.value = true;
   try {
@@ -222,21 +327,27 @@ const cargarDatosDropdown = async () => {
   }
 };
 
-onMounted(cargarDatosDropdown); // Cargar al montar el componente
+onMounted(cargarDatosDropdown); 
 
 const cerrar = () => {
   emit('cerrar');
 };
 
 const manejarCierreExterno = () => {
-    if (!loadingForm.value) { // No cerrar si está cargando
+    if (!loadingForm.value) {
         cerrar();
     }
 };
 
 const guardarRequerimiento = async () => {
-  const { valid } = await formModalRef.value.validate();
-  if (!valid) {
+  if (formularioDeshabilitadoPorEstado.value) {
+    console.warn("Intento de guardar un requerimiento ya procesado.");
+    return;
+  }
+
+  if (!formModalRef.value) return;
+  const validationResult = await formModalRef.value.validate();
+  if (!validationResult.valid) {
     errorForm.value = 'Por favor, complete todos los campos requeridos correctamente.';
     return;
   }
@@ -244,39 +355,37 @@ const guardarRequerimiento = async () => {
   loadingForm.value = true;
   errorForm.value = '';
 
-  // Preparar payload, asegurando que los opcionales no se envíen como strings vacíos si son números o fechas
   const payload = { ...requerimientoLocal };
-  if (payload.sueldoPropuesto === '' || payload.sueldoPropuesto === undefined) payload.sueldoPropuesto = null;
-  if (!payload.fechaDeseadaIngreso) delete payload.fechaDeseadaIngreso;
-  if (!payload.jefeDestinoId) delete payload.jefeDestinoId;
 
+  payload.sueldoPropuesto = (payload.sueldoPropuesto === '' || payload.sueldoPropuesto === undefined || payload.sueldoPropuesto === null)
+    ? null
+    : parseFloat(payload.sueldoPropuesto);
+
+  payload.fechaDeseadaIngreso = payload.fechaDeseadaIngreso || null;
+
+  payload.jefeDestinoId = (payload.jefeDestinoId === '' || payload.jefeDestinoId === undefined || payload.jefeDestinoId === null)
+    ? null
+    : parseInt(payload.jefeDestinoId, 10); 
 
   try {
-    if (props.modoEditar) {
-      // LLAMAR AL SERVICIO DE ACTUALIZAR (necesitarás crear este método en RequerimientoService y su endpoint)
-      // await RequerimientoService.actualizarRequerimiento(payload.requerimientoId, payload);
-      console.log("Actualizando requerimiento (simulado):", payload);
-      // Simulación
-      setTimeout(() => {
-         emit('requerimientoGuardado');
-         loadingForm.value = false;
-      }, 1000);
-    } else {
-      // Crear nuevo
-      const nuevoRequerimiento = await RequerimientoService.crearRequerimiento(payload);
-      console.log("Requerimiento creado:", nuevoRequerimiento);
-      emit('requerimientoGuardado');
+    if (requerimientoLocal.requerimientoId && props.modoEditar) {
+      await RequerimientoService.actualizarRequerimiento(requerimientoLocal.requerimientoId, payload);
+      emit('requerimientoGuardado', { esNuevo: false }); // Siempre es actualización aquí
+    } else { 
+      if ('requerimientoId' in payload) {
+        if (!payload.requerimientoId || !props.modoEditar) { 
+            delete payload.requerimientoId;
+        }
+      }
+      await RequerimientoService.crearRequerimiento(payload);
+      emit('requerimientoGuardado', { esNuevo: true });
     }
+    
   } catch (error) {
     errorForm.value = error.message || 'Ocurrió un error al guardar el requerimiento.';
+    console.error('Error en guardarRequerimiento:', error.response?.data || error.message || error);
   } finally {
-    if (!(props.modoEditar && loadingForm.value)) { // No resetear si es simulación y sigue cargando
-        loadingForm.value = false;
-    }
+    loadingForm.value = false; 
   }
 };
 </script>
-
-<style scoped>
-/* Estilos para el modal si son necesarios */
-</style>

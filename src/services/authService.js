@@ -29,9 +29,6 @@ class AuthService {
 
     logout() {
         localStorage.removeItem('user');
-        // Aquí podrías añadir una llamada a un endpoint de logout en el backend si lo tienes
-        // para invalidar el token en el servidor (aunque con JWT esto es menos común,
-        // usualmente se maneja con listas negras de tokens o simplemente borrando del cliente).
     }
 
     getCurrentUser() {
@@ -41,7 +38,7 @@ class AuthService {
                 return JSON.parse(userStr);
             } catch (e) {
                 console.error("Error parsing user from localStorage", e);
-                localStorage.removeItem('user'); // Limpiar si está corrupto
+                localStorage.removeItem('user');
                 return null;
             }
         }

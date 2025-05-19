@@ -16,7 +16,17 @@ class RequerimientoService {
         }
     }
 
-    // --- Métodos para cargar datos para los dropdowns del formulario ---
+    async actualizarRequerimiento(requerimientoId, requerimientoData) {
+        try {
+            const response = await apiClient.put(`/RequerimientosPersonales/actualizar/${requerimientoId}`, requerimientoData);
+            return response.data;
+        } catch (error) {
+            const errorMessage = "Error al actualizar el requerimiento.";
+            console.error('Error al actualizar requerimiento:', errorMessage, error.response || error);
+            throw new Error(errorMessage);
+        }
+    }
+
     async getTiposRequerimiento() {
         try {
             const response = await apiClient.get('/RequerimientosPersonales/ListaTiposRequerimiento');
@@ -56,6 +66,15 @@ class RequerimientoService {
             throw new Error(error.response?.data?.message || "Error al cargar lista de jefes");
         }
     }
+    async getEstadosRequerimientos() {
+        try {
+            const response = await apiClient.get('/RequerimientosPersonales/ListaEstadosRequerimientos');
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener estados de requerimiento:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar estados de requerimiento");
+        }
+    }
     
     async getMisRequerimientos() {  
         try {
@@ -68,10 +87,34 @@ class RequerimientoService {
      }
     }
 
-    // Aquí añadirás más adelante:
-    // async getRequerimientoPorId(id) { ... }
-    // async aprobarRequerimiento(id, datos) { ... }
-    // async rechazarRequerimiento(id, datos) { ... }
+    async getMisRequerimientosRecientes(){
+        try {
+            const response = await apiClient.get('/RequerimientosPersonales/misSolicitudesRecientes');
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener mis requerimientos recientes:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar lista de jefes");
+        }
+    }
+
+    async getRequerimientoPorId(id) { 
+        try {
+            const response = await apiClient.get(`/RequerimientosPersonales/getRequerimientoPorId/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener requerimiento por ID:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar requerimiento");
+        }
+     }
+     async aprobarRechazarRequerimiento(datos) { 
+        try {
+            const response = await apiClient.put(`/RequerimientosPersonales/aprobarRechazar`, datos);
+            return response.data;
+        } catch (error) {
+            console.error("Error al aprobar/rechazar requerimiento:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar requerimiento");
+        }
+      }
 }
 
 export default new RequerimientoService();

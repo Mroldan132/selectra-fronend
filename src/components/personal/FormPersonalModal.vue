@@ -1,103 +1,106 @@
 <template>
-  <v-dialog v-model="visibleLocal" persistent max-width="800px" @click:outside="manejarCierreExterno">
+  <v-dialog v-model="visibleLocal" persistent max-width="900px">
     <v-card :loading="loadingForm" rounded="xl">
       <v-toolbar color="primary" dark flat>
-        <v-toolbar-title>{{ isEdit ? 'Editar Personal' : 'Nuevo Personal' }}</v-toolbar-title>
+         <v-icon class="ml-4 mr-3">{{ isEdit ? 'mdi-account-edit' : 'mdi-account-plus' }}</v-icon>
+        <v-toolbar-title class="font-weight-medium">{{ isEdit ? 'Editar Personal' : 'Nuevo Personal' }}</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn icon dark @click="cerrar">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
-      <v-card-text class="pa-5">
-        <v-alert v-if="errorForm" type="error" dense class="mb-4" :text="errorForm" />
-        <v-form ref="formModalRef" @submit.prevent="guardarPersonal">
-          <v-row>
-            <!-- Campos de Usuario -->
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.codUsuario" label="Usuario" :rules="[rules.required, rules.max50]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.clave" label="Clave" :rules="[rules.required, rules.min8]" type="password" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-                <v-select v-model="formData.rolId" :items="roles" item-title="nombre" item-value="rolId" />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-switch v-model="formData.activo" label="Activo" />
-            </v-col>
 
-            <!-- Datos Personales -->
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.apellidoPaterno" label="Apellido Paterno" :rules="[rules.required, rules.max200]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.apellidoMaterno" label="Apellido Materno" :rules="[rules.required, rules.max200]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.nombres" label="Nombres" :rules="[rules.required, rules.max200]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" label="Tipo Documento" item-title="nombre" item-value="id" :rules="[rules.required]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.numeroDocumento" label="N° Documento" :rules="[rules.required, rules.max20]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.telefono" label="Teléfono" :rules="[rules.max40]" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.emailPersonal" label="Email Personal" :rules="[rules.email, rules.max50]" variant="outlined" density="comfortable" />
-            </v-col>
+      <v-form ref="formModalRef">
+        <v-stepper v-model="step" :items="stepperItems" alt-labels class="elevation-0" hide-actions>
+          <template #item.1>
+            <v-card-text class="pa-5">
+              <h3 class="text-h6 mb-6">Información de la Cuenta</h3>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="formData.codUsuario" label="Código de Usuario" :rules="[rules.required, rules.max50]" variant="outlined" density="compact" :disabled="isEdit" />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.clave"
+                    :label="isEdit ? 'Nueva Clave (opcional)' : 'Clave'"
+                    :rules="isEdit && !formData.clave ? [] : [rules.required, rules.min8]"
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                    @click:append-inner="showPassword = !showPassword"
+                    variant="outlined"
+                    density="compact"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select v-model="formData.rolId" :items="roles" label="Rol del Sistema" item-title="nombre" item-value="rolId" :rules="[rules.required]" variant="outlined" density="compact"/>
+                </v-col>
+                <v-col cols="12" md="6" class="d-flex align-center">
+                  <v-switch v-model="formData.activo" label="Usuario Activo" color="success" inset/>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </template>
 
-            <!-- Ubigeo Nacimiento -->
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedDepartamentoNacimiento" :items="departamentosNacimiento" label="Departamento de Nacimiento" item-title="nombre" item-value="ubigeoId" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedProvinciaNacimiento" :items="provinciasNacimiento" label="Provincia de Nacimiento" item-title="nombre" item-value="ubigeoId" :disabled="!selectedDepartamentoNacimiento" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedDistritoNacimiento" :items="distritosNacimiento" label="Distrito de Nacimiento" item-title="nombre" item-value="ubigeoId" :disabled="!selectedProvinciaNacimiento" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
+          <template #item.2>
+            <v-card-text class="pa-5">
+              <h3 class="text-h6 mb-2">Datos de Identificación</h3>
+              <v-row>
+                <v-col cols="12" sm="4"><v-text-field v-model="formData.nombres" label="Nombres" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" sm="4"><v-text-field v-model="formData.apellidoPaterno" label="Apellido Paterno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" sm="4"><v-text-field v-model="formData.apellidoMaterno" label="Apellido Materno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" sm="4">
+                    <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" label="Tipo Documento" item-title="nombre" item-value="id" :rules="[rules.required]" variant="outlined" density="compact" />
+                </v-col>
+                <v-col cols="12" sm="4"><v-text-field v-model="formData.numeroDocumento" label="N° Documento" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" sm="4">
+                   <v-menu v-model="dateMenuNacimiento" :close-on-content-click="false" transition="scale-transition">
+                      <template v-slot:activator="{ props }">
+                        <v-text-field v-model="formattedFechaNacimiento" label="Fecha Nacimiento" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact"/>
+                      </template>
+                      <v-date-picker v-model="formData.fechaNacimiento" @update:model-value="dateMenuNacimiento = false" hide-header />
+                    </v-menu>
+                </v-col>
+              </v-row>
+              <v-divider class="my-4"></v-divider>
+              <h3 class="text-h6 mb-2">Ubicación e Información de Contacto</h3>
+               <UbigeoSelector v-model="formData.ubigeoNacimiento" label-prefix="Nacimiento:" :rules="[rules.required]"/>
+              <UbigeoSelector v-model="formData.ubigeoResidencia" label-prefix="Residencia:" :rules="[rules.required]"/>
+              <v-row>
+                <v-col cols="12" sm="6"><v-text-field v-model="formData.telefono" label="Teléfono" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" sm="6"><v-text-field v-model="formData.emailPersonal" label="Email Personal" :rules="[rules.email]" variant="outlined" density="compact" /></v-col>
+              </v-row>
+            </v-card-text>
+          </template>
 
-            <!-- Ubigeo Residencia -->
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedDepartamentoResidencia" :items="departamentosResidencia" label="Departamento de Residencia" item-title="nombre" item-value="ubigeoId" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedProvinciaResidencia" :items="provinciasResidencia" label="Provincia de Residencia" item-title="nombre" item-value="ubigeoId" :disabled="!selectedDepartamentoResidencia" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="4">
-              <v-select v-model="selectedDistritoResidencia" :items="distritosResidencia" label="Distrito de Residencia" item-title="nombre" item-value="ubigeoId" :disabled="!selectedProvinciaResidencia" :rules="[rules.required]" variant="outlined" density="comfortable" />
-            </v-col>
+          <template #item.3>
+             <v-card-text class="pa-5">
+              <h3 class="text-h6 mb-6">Información Laboral</h3>
+              <v-row>
+                <v-col cols="12" md="6"><v-select v-model="formData.areaId" :items="areas" label="Área" item-title="nombreArea" item-value="areaId" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" md="6"><v-select v-model="formData.cargoId" :items="cargos" label="Cargo" item-title="nombreCargo" item-value="cargoId" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" md="6"><v-select v-model="formData.jefeDirectoId" :items="jefes" label="Jefe Directo" item-title="nombrePersonal" item-value="personalId" clearable variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" md="6"><v-text-field v-model="formData.emailCorporativo" label="Email Corporativo" :rules="[rules.required, rules.email]" variant="outlined" density="compact" /></v-col>
+                <v-col cols="12" md="6">
+                   <v-menu v-model="dateMenuIngreso" :close-on-content-click="false" transition="scale-transition">
+                      <template v-slot:activator="{ props }">
+                        <v-text-field v-model="formattedFechaIngreso" label="Fecha Ingreso Compañía" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact" />
+                      </template>
+                      <v-date-picker v-model="formData.fechaIngresoCompania" @update:model-value="dateMenuIngreso = false" hide-header />
+                    </v-menu>
+                </v-col>
+              </v-row>
+             </v-card-text>
+          </template>
+        </v-stepper>
+      </v-form>
 
-            <!-- Otros Datos -->
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.fechaNacimiento" label="Fecha Nacimiento" type="date" variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.emailCorporativo" label="Email Corporativo" :rules="[rules.required, rules.email, rules.max100]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select v-model="formData.areaId" :items="areas" label="Área" item-title="nombreArea" item-value="areaId" :rules="[rules.required]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select v-model="formData.cargoId" :items="cargos" label="Cargo" item-title="nombreCargo" item-value="cargoId" :rules="[rules.required]" variant="outlined" density="comfortable" required />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select v-model="formData.jefeDirectoId" :items="jefes" label="Jefe Directo" item-title="nombreCompleto" item-value="id" clearable variant="outlined" density="comfortable" />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-text-field v-model="formData.fechaIngresoCompania" label="Fecha Ingreso Compañía" type="date" variant="outlined" density="comfortable" />
-            </v-col>
-          </v-row>
-        </v-form>
-      </v-card-text>
       <v-divider></v-divider>
-      <v-card-actions class="pa-4">
+      <v-card-actions class="pa-4 bg-grey-lighten-5">
+         <v-alert v-if="errorForm" type="error" density="compact" variant="tonal" class="mr-4" :text="errorForm" />
         <v-spacer></v-spacer>
-        <v-btn color="grey-darken-1" text @click="cerrar" :disabled="loadingForm">Cancelar</v-btn>
-        <v-btn color="success" @click="guardarPersonal" :loading="loadingForm" :disabled="loadingForm">
+        <v-btn :disabled="step === 1" variant="text" @click="step--">Atrás</v-btn>
+        <v-btn v-if="step < 3" color="primary" variant="tonal" @click="siguientePaso">Siguiente</v-btn>
+        <v-btn v-else color="success" variant="flat" @click="guardarPersonal" :loading="loadingForm">
           {{ isEdit ? 'Guardar Cambios' : 'Crear Personal' }}
         </v-btn>
       </v-card-actions>
@@ -107,266 +110,143 @@
 
 <script setup>
 import { ref, reactive, watch, computed, onMounted } from 'vue';
+import UbigeoSelector from '@/components/utils/UbigeoSelector.vue'; 
 import CargoService from '@/services/CargoService';
 import AreaService from '@/services/AreaService';
 import UsuarioService from '@/services/UsuarioService';
 import PersonalService from '@/services/PersonalService';
 import DatosPersonalesService from '@/services/DatosPersonalesService';
 
-const props = defineProps({
-  modelValue: Boolean,
-  personal: Object
-});
-const emit = defineEmits(['update:modelValue', 'saved']);
+// --- Props y Emits ---
+const props = defineProps({ modelValue: Boolean, personal: Object });
+const emit = defineEmits(['update:modelValue', 'saved', 'error']);
 
+// --- Estado del Componente ---
 const visibleLocal = ref(props.modelValue);
-watch(() => props.modelValue, val => visibleLocal.value = val);
-watch(visibleLocal, val => { if (!val) cerrar(); });
-
-const isEdit = computed(() => !!props.personal);
-
 const formModalRef = ref(null);
 const loadingForm = ref(false);
 const errorForm = ref('');
+const step = ref(1);
+const showPassword = ref(false);
+const dateMenuNacimiento = ref(false);
+const dateMenuIngreso = ref(false);
+
+const stepperItems = [
+  { title: 'Cuenta', value: 1 },
+  { title: 'Datos Personales', value: 2 },
+  { title: 'Datos Laborales', value: 3 }
+];
 
 const formData = reactive({
-  codUsuario: '',
-  clave: '',
-  rolId: null,
-  activo: true,
-  apellidoPaterno: '',
-  apellidoMaterno: '',
-  nombres: '',
-  tipoDocumentoId: null,
-  numeroDocumento: '',
-  telefono: '',
-  emailPersonal: '',
-  ubigeoNacimiento: '',
-  ubigeoResidencia: '',
-  fechaNacimiento: '',
-  emailCorporativo: '',
-  areaId: null,
-  cargoId: null,
-  jefeDirectoId: null,
-  fechaIngresoCompania: ''
+  // ... (tu objeto formData es perfecto, no necesita cambios)
 });
 
+// --- Estado para Selects y Datos Externos ---
 const roles = ref([]);
 const tiposDocumento = ref([]);
 const areas = ref([]);
 const cargos = ref([]);
 const jefes = ref([]);
 
-const departamentosNacimiento = ref([]);
-const provinciasNacimiento = ref([]);
-const distritosNacimiento = ref([]);
+// --- Reglas de Validación ---
+const rules = { /* ... (tus reglas son perfectas) */ };
 
-const departamentosResidencia = ref([]);
-const provinciasResidencia = ref([]);
-const distritosResidencia = ref([]);
+// --- Computed Properties ---
+const isEdit = computed(() => !!props.personal?.codUsuario);
+const formatDate = (date) => date ? new Date(date).toLocaleDateString('es-ES') : '';
+const formattedFechaNacimiento = computed(() => formatDate(formData.fechaNacimiento));
+const formattedFechaIngreso = computed(() => formatDate(formData.fechaIngresoCompania));
 
-const selectedDepartamentoNacimiento = ref(null);
-const selectedProvinciaNacimiento = ref(null);
-const selectedDistritoNacimiento = ref(null);
 
-const selectedDepartamentoResidencia = ref(null);
-const selectedProvinciaResidencia = ref(null);
-const selectedDistritoResidencia = ref(null);
+// --- Watchers ---
+watch(() => props.modelValue, (val) => {
+  visibleLocal.value = val;
+  if (val) {
+    step.value = 1; // Resetear al primer paso al abrir
+    cargarDatosDelPersonal();
+  }
+});
+watch(visibleLocal, val => { if (!val) emit('update:modelValue', false) });
 
-const rules = {
-  required: v => !!v || 'Requerido',
-  max50: v => !v || v.length <= 50 || 'Máx 50 caracteres',
-  max100: v => !v || v.length <= 100 || 'Máx 100 caracteres',
-  max200: v => !v || v.length <= 200 || 'Máx 200 caracteres',
-  max40: v => !v || v.length <= 40 || 'Máx 40 caracteres',
-  max20: v => !v || v.length <= 20 || 'Máx 20 caracteres',
-  min8: v => !v || v.length >= 8 || 'Mín 8 caracteres',
-  email: v => !v || /^\S+@\S+\.\S+$/.test(v) || 'Email inválido',
+// --- Métodos ---
+const cargarDatosDelPersonal = () => {
+  if (props.personal) {
+    
+    Object.assign(formData, props.personal);
+    console.log('Datos recibidos en el modal (props.personal):', props.personal);
+    // Convertir fechas string a objetos Date para los pickers
+    if (props.personal.fechaNacimiento) formData.fechaNacimiento = new Date(props.personal.fechaNacimiento);
+    if (props.personal.fechaIngresoCompania) formData.fechaIngresoCompania = new Date(props.personal.fechaIngresoCompania);
+  } else {
+    Object.keys(formData).forEach(key => formData[key] = (key === 'activo') ? true : null);
+  }
 };
 
-onMounted(async () => {
-  roles.value = await UsuarioService.getRoles();
-  tiposDocumento.value = await DatosPersonalesService.getTiposDocumento();
-  areas.value = await AreaService.getAreas();
-  cargos.value = await CargoService.getCargos();
-  jefes.value = await PersonalService.getPersonalParaJefeDestino();
-
-  departamentosNacimiento.value = await DatosPersonalesService.getDepartamentos();
-  departamentosResidencia.value = departamentosNacimiento.value;
-
-  // Si hay personal cargado, inicializamos selects de ubigeo
-  if (props.personal) {
-    cargarPersonalEnFormulario(props.personal);
-  }
-});
-
-watch(selectedDepartamentoNacimiento, async (newVal) => {
-  if (newVal) {
-    provinciasNacimiento.value = await DatosPersonalesService.getProvincias(newVal);
-    selectedProvinciaNacimiento.value = null;
-    selectedDistritoNacimiento.value = null;
-    distritosNacimiento.value = [];
-  } else {
-    provinciasNacimiento.value = [];
-    distritosNacimiento.value = [];
-    selectedProvinciaNacimiento.value = null;
-    selectedDistritoNacimiento.value = null;
-  }
-});
-
-watch(selectedProvinciaNacimiento, async (newVal) => {
-  if (newVal) {
-    distritosNacimiento.value = await DatosPersonalesService.getDistritos(newVal);
-    selectedDistritoNacimiento.value = null;
-  } else {
-    distritosNacimiento.value = [];
-    selectedDistritoNacimiento.value = null;
-  }
-});
-
-watch(selectedDepartamentoResidencia, async (newVal) => {
-  if (newVal) {
-    provinciasResidencia.value = await DatosPersonalesService.getProvincias(newVal);
-    selectedProvinciaResidencia.value = null;
-    selectedDistritoResidencia.value = null;
-    distritosResidencia.value = [];
-  } else {
-    provinciasResidencia.value = [];
-    distritosResidencia.value = [];
-    selectedProvinciaResidencia.value = null;
-    selectedDistritoResidencia.value = null;
-  }
-});
-
-watch(selectedProvinciaResidencia, async (newVal) => {
-  if (newVal) {
-    distritosResidencia.value = await DatosPersonalesService.getDistritos(newVal);
-    selectedDistritoResidencia.value = null;
-  } else {
-    distritosResidencia.value = [];
-    selectedDistritoResidencia.value = null;
-  }
-});
-
-watch([selectedDepartamentoNacimiento, selectedProvinciaNacimiento, selectedDistritoNacimiento], () => {
-  const dep = selectedDepartamentoNacimiento.value || '';
-  const prov = selectedProvinciaNacimiento.value?.substring(2, 4) || '';
-  const dist = selectedDistritoNacimiento.value?.substring(4, 6) || '';
-  formData.ubigeoNacimiento = dep + prov + dist;
-});
-
-watch([selectedDepartamentoResidencia, selectedProvinciaResidencia, selectedDistritoResidencia], () => {
-  const dep = selectedDepartamentoResidencia.value || '';
-  const prov = selectedProvinciaResidencia.value?.substring(2, 4) || '';
-  const dist = selectedDistritoResidencia.value?.substring(4, 6) || '';
-  formData.ubigeoResidencia = dep + prov + dist;
-});
-
-watch(() => props.personal, (nuevo) => {
-  if (nuevo) {
-    cargarPersonalEnFormulario(nuevo);
-  } else {
-    // Nuevo personal: resetear formulario
-    resetFormulario();
-  }
-}, { immediate: true });
-
-function resetFormulario() {
-  Object.assign(formData, {
-    codUsuario: '',
-    clave: '',
-    rolId: null,
-    activo: true,
-    apellidoPaterno: '',
-    apellidoMaterno: '',
-    nombres: '',
-    tipoDocumentoId: null,
-    numeroDocumento: '',
-    telefono: '',
-    emailPersonal: '',
-    ubigeoNacimiento: '',
-    ubigeoResidencia: '',
-    fechaNacimiento: '',
-    emailCorporativo: '',
-    areaId: null,
-    cargoId: null,
-    jefeDirectoId: null,
-    fechaIngresoCompania: ''
-  });
-
-  selectedDepartamentoNacimiento.value = null;
-  selectedProvinciaNacimiento.value = null;
-  selectedDistritoNacimiento.value = null;
-
-  selectedDepartamentoResidencia.value = null;
-  selectedProvinciaResidencia.value = null;
-  selectedDistritoResidencia.value = null;
-}
-
-
-function cargarPersonalEnFormulario(personal) {
-  Object.assign(formData, {
-    codUsuario: personal.codUsuario || '',
-    clave: personal.clave || '',
-    rolId: personal.rolId || null,
-    activo: personal.activo !== undefined ? personal.activo : true,
-    apellidoPaterno: personal.apellidoPaterno || '',
-    apellidoMaterno: personal.apellidoMaterno || '',
-    nombres: personal.nombres || '',
-    tipoDocumentoId: personal.tipoDocumentoId || null,
-    numeroDocumento: personal.numeroDocumento || '',
-    telefono: personal.telefono || '',
-    emailPersonal: personal.emailPersonal || '',
-    ubigeoNacimiento: personal.ubigeoNacimiento || '',
-    ubigeoResidencia: personal.ubigeoResidencia || '',
-    fechaNacimiento: personal.fechaNacimiento || '',
-    emailCorporativo: personal.emailCorporativo || '',
-    areaId: personal.areaId || null,
-    cargoId: personal.cargoId || null,
-    jefeDirectoId: personal.jefeDirectoId || null,
-    fechaIngresoCompania: personal.fechaIngresoCompania || ''
-  });
-
-  selectedDepartamentoNacimiento.value = personal.ubigeoNacimiento?.substring(0, 2) || null;
-  selectedProvinciaNacimiento.value = personal.ubigeoNacimiento?.substring(0, 4) || null;
-  selectedDistritoNacimiento.value = personal.ubigeoNacimiento || null;
-
-  selectedDepartamentoResidencia.value = personal.ubigeoResidencia?.substring(0, 2) || null;
-  selectedProvinciaResidencia.value = personal.ubigeoResidencia?.substring(0, 4) || null;
-  selectedDistritoResidencia.value = personal.ubigeoResidencia || null;
-}
-
-function manejarCierreExterno() {
-  if (!loadingForm) {
-    cerrar();
-  }
-}
-
-function cerrar() {
+const cerrar = () => {
+  if (loadingForm.value) return;
   visibleLocal.value = false;
-  emit('update:modelValue', false);
-}
+};
 
-async function guardarPersonal() {
+const siguientePaso = async () => {
+  const { valid } = await formModalRef.value.validate();
+  if (valid) {
+    step.value++;
+    errorForm.value = '';
+  } else {
+    errorForm.value = 'Por favor, corrige los errores antes de continuar.';
+  }
+};
+
+const guardarPersonal = async () => {
   errorForm.value = '';
-  if (!formModalRef.value.validate()) {
-    errorForm.value = 'Corrija los errores del formulario.';
+  const { valid } = await formModalRef.value.validate();
+  if (!valid) {
+    errorForm.value = 'Faltan campos obligatorios por completar.';
     return;
   }
+
   loadingForm.value = true;
   try {
+    const payload = { ...formData };
+    if (payload.fechaNacimiento instanceof Date) payload.fechaNacimiento = payload.fechaNacimiento.toISOString().slice(0, 10);
+    if (payload.fechaIngresoCompania instanceof Date) payload.fechaIngresoCompania = payload.fechaIngresoCompania.toISOString().slice(0, 10);
+
     if (isEdit.value) {
-      await PersonalService.updatePersonal(formData);
+      await PersonalService.updatePersonal(payload.personalId, payload);
+      emit('saved', 'Personal actualizado con éxito.');
+      loadingForm.value = false;
     } else {
-        console.log('Registrando nuevo usuario:', formData);
-      await UsuarioService.registrarUsuario(formData);
+      await UsuarioService.registrarUsuario(payload);
+      emit('saved', 'Personal creado con éxito.');
+      loadingForm.value = false;
+
     }
-    emit('saved');
     cerrar();
   } catch (error) {
-    errorForm.value = error.message || 'Error al guardar personal.';
+    console.error(error);
+    errorForm.value = error.response?.data?.message || 'Ocurrió un error al guardar.';
   } finally {
     loadingForm.value = false;
   }
-}
+};
+
+// --- Lifecycle Hooks ---
+onMounted(async () => {
+  loadingForm.value = true;
+  [
+    roles.value,
+    tiposDocumento.value,
+    areas.value,
+    cargos.value,
+    jefes.value
+  ] = await Promise.all([
+    UsuarioService.getRoles(),
+    DatosPersonalesService.getTiposDocumento(),
+    AreaService.getAreas(),
+    CargoService.getCargos(),
+    PersonalService.getPersonalParaJefeDestino()
+  ]);
+  loadingForm.value = false;
+  cargarDatosDelPersonal();
+});
 </script>

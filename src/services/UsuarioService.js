@@ -23,6 +23,19 @@ class UsuarioService {
     }
   }
 
+async verificarUsuario(codUsuario) {
+    if (!codUsuario) {
+      return false;
+    }
+    
+    try {
+      const response = await apiClient.get(`/Usuarios/verificar-existencia/${codUsuario}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error al verificar usuario:", error.response || error);
+      throw new Error(error.response?.data?.message || "No se pudo conectar con el servicio de verificación.");
+    }
+  }
 }
 
 export default new UsuarioService();

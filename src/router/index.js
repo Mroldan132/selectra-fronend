@@ -43,7 +43,20 @@ const router = createRouter({
     { 
       path: '/personal',
       name: 'gestionPersonal',
-      component: () => import('@/views/GestionPersonal.vue'),
+      component: () => import('@/views/GestionPersonalView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/ofertasLaboralesAdm',
+      name: 'ofertasLaboralesAdm',
+      component: () => import('@/views/GestionOfertaLaboralView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    }
+    ,
+    {
+      path: '/portalOfertas',
+      name: 'portalOfertas',
+      component: () => import('@/views/PortalDeOfertas.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
     }
   ]

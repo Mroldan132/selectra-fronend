@@ -1,391 +1,273 @@
 <template>
-  <v-container class="fill-height" fluid>
+  <v-container class="fill-height" fluid style="background-color: rgb(var(--v-theme-grey-lighten-4));">
     <v-row align="center" justify="center">
-      <v-col cols="12" sm="10" md="8" lg="7" xl="6"> 
-        <v-card class="elevation-12" :loading="loading">
+      <v-col cols="12" sm="10" md="8" lg="7" xl="6">
+        <v-card class="elevation-12 rounded-xl" :loading="loading">
           <v-toolbar color="secondary" dark flat>
-            <v-toolbar-title>Registro de Aspirante</v-toolbar-title>
+            <v-toolbar-title class="font-weight-medium d-flex align-center">
+              <v-icon class="mr-3">mdi-account-plus-outline</v-icon>
+              Registro de Aspirante
+            </v-toolbar-title>
           </v-toolbar>
-          <v-card-text class="pa-md-6 pa-sm-4 pa-3">
-            <v-form @submit.prevent="handleRegister" ref="registerFormRef">
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model.trim="formData.codUsuario" 
-                    label="Código de Usuario" 
-                    :rules="[rules.required, rules.maxLength(50)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.clave" 
-                    label="Contraseña" 
-                    type="password" 
-                    :rules="[rules.required, rules.minLength(8)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-              </v-row>
 
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field 
-                    v-model="formData.nombres" 
-                    label="Nombres" 
-                    :rules="[rules.required, rules.maxLength(200)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-              </v-row>
+          <v-form ref="registerFormRef">
+            <v-window v-model="step">
+              <v-window-item :value="1">
+                <v-card-text class="pa-md-8 pa-4">
+                  <div class="text-center mb-8">
+                    <h2 class="text-h4 font-weight-bold text-secondary">Crea tu Cuenta</h2>
+                    <p class="text-medium-emphasis">Comienza con tus credenciales de acceso.</p>
+                  </div>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.trim="formData.codUsuario"
+                        label="Nombre de usuario"
+                        :rules="[rules.required, rules.maxLength(50), usernameRule]"
+                        variant="outlined"
+                        density="compact"
+                        prepend-inner-icon="mdi-account-circle-outline"
+                        @blur="checkUsername"
+                        :loading="verifyingUsername"
+                        :disabled="verifyingUsername"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="formData.clave" label="Contraseña" :rules="[rules.required, rules.minLength(8)]" :type="showPassword ? 'text' : 'password'" :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'" @click:append-inner="showPassword = !showPassword" variant="outlined" density="compact" prepend-inner-icon="mdi-lock-outline" />
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-window-item>
 
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.apellidoPaterno" 
-                    label="Apellido Paterno" 
-                    :rules="[rules.required, rules.maxLength(200)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.apellidoMaterno" 
-                    label="Apellido Materno" 
-                    :rules="[rules.required, rules.maxLength(200)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-select 
-                    v-model="formData.tipoDocumentoId" 
-                    :items="tiposDocumento" 
-                    item-value="id" 
-                    item-title="nombre" 
-                    label="Tipo de Documento" 
-                    :rules="[rules.required]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.numeroDocumento" 
-                    label="Número de Documento" 
-                    :rules="[rules.required, rules.maxLength(20)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.emailPersonal" 
-                    label="Email Personal" 
-                    type="email" 
-                    :rules="[rules.email, rules.maxLength(50)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.telefono" 
-                    label="Teléfono" 
-                    :rules="[rules.maxLength(40)]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  ></v-text-field>
-                </v-col>
-              </v-row>
+              <v-window-item :value="2">
+                <v-card-text class="pa-md-8 pa-4">
+                   <div class="text-center mb-8">
+                    <h2 class="text-h4 font-weight-bold text-secondary">Tu Identidad</h2>
+                    <p class="text-medium-emphasis">Cuéntanos un poco sobre ti.</p>
+                  </div>
+                  <v-row>
+                    <v-col cols="12"><v-text-field v-model="formData.nombres" label="Nombres" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                    <v-col cols="12" md="6"><v-text-field v-model="formData.apellidoPaterno" label="Apellido Paterno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                    <v-col cols="12" md="6"><v-text-field v-model="formData.apellidoMaterno" label="Apellido Materno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
+                    <v-col cols="12" md="6">
+                      <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" item-value="id" item-title="nombre" label="Tipo de Documento" :rules="[rules.required]" variant="outlined" density="compact" />
+                    </v-col>
+                    <v-col cols="12" md="6"><v-text-field v-model="formData.numeroDocumento" label="Número de Documento" :rules="[rules.required, rules.maxLength(20)]" variant="outlined" density="compact" /></v-col>
+                     <v-col cols="12" md="6"><v-text-field v-model="formData.emailPersonal" label="Email Personal" type="email" :rules="[rules.required, rules.email]" variant="outlined" density="compact" /></v-col>
+                    <v-col cols="12" md="6"><v-text-field v-model="formData.telefono" label="Teléfono (Opcional)" variant="outlined" density="compact" /></v-col>
+                  </v-row>
+                </v-card-text>
+              </v-window-item>
               
-              <div class="text-subtitle-1 mt-4 mb-1">Lugar de Nacimiento</div>
-              <v-row>
-                <v-col cols="12">
-                  <v-select 
-                    v-model="selectedDepartamentoNacimiento" 
-                    :items="departamentos" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Departamento de Nacimiento" 
-                    :rules="[rules.required]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12" sm="6">
-                  <v-select 
-                    v-model="selectedProvinciaNacimiento" 
-                    :items="provinciasNacimiento" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Provincia de Nacimiento" 
-                    :rules="[rules.required]" 
-                    :disabled="!selectedDepartamentoNacimiento" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select 
-                    v-model="selectedDistritoNacimiento" 
-                    :items="distritosNacimiento" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Distrito de Nacimiento" 
-                    :rules="[rules.required]" 
-                    :disabled="!selectedProvinciaNacimiento" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-              </v-row>
+              <v-window-item :value="3">
+                <v-card-text class="pa-md-8 pa-4">
+                   <div class="text-center mb-8">
+                    <h2 class="text-h4 font-weight-bold text-secondary">Tus Detalles</h2>
+                    <p class="text-medium-emphasis">Ya casi terminamos. Completa tu información.</p>
+                  </div>
+                  <UbigeoSelector v-model="formData.ubigeoNacimiento" label-prefix="Nacimiento:" :rules="[rules.required]" />
+                  <UbigeoSelector v-model="formData.ubigeoResidencia" label-prefix="Residencia:" :rules="[rules.required]" />
+                   <v-row>
+                     <v-col cols="12" md="6">
+                       <v-menu v-model="dateMenu" :close-on-content-click="false" transition="scale-transition">
+                          <template #activator="{ props }">
+                            <v-text-field v-model="formattedFechaNacimiento" label="Fecha de Nacimiento" :rules="[rules.required]" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact"/>
+                          </template>
+                          <v-date-picker v-model="formData.fechaNacimiento" @update:model-value="dateMenu = false" hide-header :max="new Date().toISOString().slice(0,10)" />
+                        </v-menu>
+                     </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select v-model="formData.nivelAcademicoId" :items="nivelesAcademicos" item-value="id" item-title="nombre" label="Nivel Académico" :rules="[rules.required]" variant="outlined" density="compact" />
+                     </v-col>
+                   </v-row>
+                </v-card-text>
+              </v-window-item>
 
-              <div class="text-subtitle-1 mt-4 mb-1">Lugar de Residencia</div>
-              <v-row>
-                <v-col cols="12">
-                  <v-select 
-                    v-model="selectedDepartamentoResidencia" 
-                    :items="departamentos" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Departamento de Residencia" 
-                    :rules="[rules.required]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12" sm="6">
-                  <v-select 
-                    v-model="selectedProvinciaResidencia" 
-                    :items="provinciasResidencia" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Provincia de Residencia" 
-                    :rules="[rules.required]" 
-                    :disabled="!selectedDepartamentoResidencia" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select 
-                    v-model="selectedDistritoResidencia" 
-                    :items="distritosResidencia" 
-                    item-title="nombre" 
-                    item-value="ubigeoId" 
-                    label="Distrito de Residencia" 
-                    :rules="[rules.required]" 
-                    :disabled="!selectedProvinciaResidencia" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-              </v-row>
+              <v-window-item :value="4">
+                 <v-card-text class="text-center pa-16">
+                    <v-scale-transition>
+                      <v-icon v-if="success" class="mb-4" color="success" icon="mdi-check-decagram-outline" size="88"></v-icon>
+                    </v-scale-transition>
+                    <h2 class="text-h4 font-weight-bold mb-2">¡Registro Exitoso!</h2>
+                    <p class="text-medium-emphasis">
+                      Hemos creado tu cuenta. Serás redirigido a la página de inicio de sesión en unos segundos.
+                    </p>
+                    <v-progress-linear indeterminate color="primary" class="mt-8"></v-progress-linear>
+                 </v-card-text>
+              </v-window-item>
 
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field 
-                    v-model="formData.fechaNacimiento" 
-                    label="Fecha de Nacimiento" 
-                    type="date" 
-                    class="mb-2"
-                    dense
-                    outlined
-                    :rules="[rules.required]"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select 
-                    v-model="formData.nivelAcademicoId" 
-                    :items="nivelesAcademicos" 
-                    item-value="id" 
-                    item-title="nombre" 
-                    label="Nivel Académico" 
-                    :rules="[rules.required]" 
-                    class="mb-2"
-                    dense
-                    outlined
-                  />
-                </v-col>
-              </v-row>
+            </v-window>
+          </v-form>
 
-              <v-alert v-if="errorMessage" type="error" dense text class="mt-3 mb-3">{{ errorMessage }}</v-alert>
-              <v-alert v-if="successMessage" type="success" dense text class="mt-3 mb-3">{{ successMessage }}</v-alert>
-            </v-form>
-          </v-card-text>
-          <v-card-actions class="pa-4">
-            <v-spacer></v-spacer>
-            <v-btn color="secondary" @click="handleRegister" :loading="loading" :disabled="loading" large>Registrarme</v-btn>
+          <v-divider></v-divider>
+          
+          <v-card-actions class="pa-4" v-if="step < 4">
+             <v-alert v-if="errorMessage" type="error" density="compact" variant="tonal" class="mr-auto" :text="errorMessage" />
+             <v-spacer v-else></v-spacer>
+             <v-btn :disabled="step === 1" variant="text" @click="step--">Atrás</v-btn>
+             <v-btn v-if="step < 3" color="secondary" variant="tonal" @click="siguientePaso" :disabled="verifyingUsername">Siguiente</v-btn>
+             <v-btn v-else color="success" variant="flat" size="large" @click="handleRegister" :loading="loading">
+               Finalizar Registro
+             </v-btn>
           </v-card-actions>
         </v-card>
+
+         <div class="text-center mt-6">
+            <p class="text-medium-emphasis">¿Ya tienes una cuenta? 
+              <router-link to="/login" class="text-secondary font-weight-bold">Inicia Sesión</router-link>
+            </p>
+          </div>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AspiranteService from '@/services/AspiranteService';
 import NivelAcademicoService from '@/services/NivelAcademicoService';
 import DatosPersonalesService from '@/services/DatosPersonalesService';
+import UsuarioService from '@/services/UsuarioService'; // <-- Importamos el servicio de usuario
+import UbigeoSelector from '@/components/utils/UbigeoSelector.vue';
 
 const router = useRouter();
 const loading = ref(false);
+const success = ref(false);
 const errorMessage = ref('');
-const successMessage = ref('');
 const registerFormRef = ref(null);
 
+// --- State ---
+const step = ref(1);
+const showPassword = ref(false);
+const dateMenu = ref(false);
+
 const formData = reactive({
-  codUsuario: '',
-  clave: '',
-  activo: true,
-  apellidoPaterno: '',
-  apellidoMaterno: '',
-  nombres: '',
-  tipoDocumentoId: null,
-  numeroDocumento: '',
-  telefono: '',
-  emailPersonal: '',
-  ubigeoNacimiento: null,
-  ubigeoResidencia: null,
-  fechaNacimiento: null,
+  codUsuario: '', clave: '', activo: true, apellidoPaterno: '',
+  apellidoMaterno: '', nombres: '', tipoDocumentoId: null,
+  numeroDocumento: '', telefono: '', emailPersonal: '',
+  ubigeoNacimiento: null, ubigeoResidencia: null, fechaNacimiento: null,
   nivelAcademicoId: null,
 });
 
 const nivelesAcademicos = ref([]);
 const tiposDocumento = ref([]);
-const departamentos = ref([]);
-const provinciasNacimiento = ref([]);
-const distritosNacimiento = ref([]);
-const provinciasResidencia = ref([]);
-const distritosResidencia = ref([]);
 
-const selectedDepartamentoNacimiento = ref(null);
-const selectedProvinciaNacimiento = ref(null);
-const selectedDistritoNacimiento = ref(null);
+// --- NUEVO ESTADO PARA LA VALIDACIÓN DE USUARIO ---
+const verifyingUsername = ref(false);
+const usernameExists = ref(false);
+let debounceTimer = null;
 
-const selectedDepartamentoResidencia = ref(null);
-const selectedProvinciaResidencia = ref(null);
-const selectedDistritoResidencia = ref(null);
+// --- Computed ---
+const formattedFechaNacimiento = computed(() => {
+  return formData.fechaNacimiento ? new Date(formData.fechaNacimiento).toLocaleDateString('es-ES') : '';
+});
 
+// --- Validation Rules ---
 const rules = {
-  required: value => !!value || 'Campo requerido.',
+  required: value => !!value || 'Este campo es obligatorio.',
   minLength: length => value => (value && value.length >= length) || `Mínimo ${length} caracteres.`,
   maxLength: length => value => (value && value.length <= length) || `Máximo ${length} caracteres.`,
-  email: value => /.+@.+\..+/.test(value) || 'Email no válido.',
+  email: value => /.+@.+\..+/.test(value) || 'El formato del email no es válido.',
+};
+
+// --- NUEVA REGLA DE VALIDACIÓN PERSONALIZADA ---
+const usernameRule = () => !usernameExists.value || 'Este nombre de usuario ya está en uso.';
+
+// --- NUEVO MÉTODO PARA VERIFICAR USUARIO ---
+const checkUsername = () => {
+  clearTimeout(debounceTimer);
+  if (!formData.codUsuario) {
+    usernameExists.value = false;
+    return;
+  }
+  
+  debounceTimer = setTimeout(async () => {
+    verifyingUsername.value = true;
+    usernameExists.value = false; // Resetear antes de la comprobación
+    try {
+      const existe = await UsuarioService.verificarUsuario(formData.codUsuario);
+      usernameExists.value = existe;
+      // Forzar una re-validación del campo específico
+      registerFormRef.value?.validate(); 
+    } catch (error) {
+      errorMessage.value = error.message || 'Error de conexión al verificar usuario.';
+    } finally {
+      verifyingUsername.value = false;
+    }
+  }, 500); // 500ms de retraso para no saturar la API
+};
+
+
+const siguientePaso = async () => {
+  const { valid } = await registerFormRef.value.validate();
+  
+  // No permitir avanzar si el usuario ya existe o se está verificando
+  if (usernameExists.value) {
+    errorMessage.value = "Por favor, elige otro nombre de usuario.";
+    return;
+  }
+  if (verifyingUsername.value) {
+     errorMessage.value = "Aguarde mientras verificamos el usuario...";
+    return;
+  }
+
+  if (valid) {
+    step.value++;
+    errorMessage.value = '';
+  } else {
+    errorMessage.value = 'Por favor, corrige los errores del formulario.';
+  }
+};
+
+const handleRegister = async () => {
+  errorMessage.value = '';
+  // Re-validar por si acaso
+  await checkUsername();
+  if (usernameExists.value) {
+    step.value = 1; // Regresar al paso del error
+    errorMessage.value = "Este nombre de usuario ya está en uso.";
+    return;
+  }
+
+  const { valid } = await registerFormRef.value.validate();
+  if (!valid) {
+    alert('Por favor, completa todos los campos requeridos correctamente.');
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const payload = { ...formData };
+    if (payload.fechaNacimiento instanceof Date) {
+        payload.fechaNacimiento = payload.fechaNacimiento.toISOString().slice(0, 10);
+    }
+
+    await AspiranteService.registrarAspirante(payload);
+    success.value = true;
+    step.value = 4; // Avanzar a la pantalla de éxito
+    setTimeout(() => router.push('/login'), 4000);
+
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || 'Ocurrió un error durante el registro.';
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(async () => {
   try {
     nivelesAcademicos.value = await NivelAcademicoService.obtenerNivelesAcademicos();
     tiposDocumento.value = await DatosPersonalesService.getTiposDocumento();
-    departamentos.value = await DatosPersonalesService.getDepartamentos();
   } catch (error) {
     console.error("Error al cargar datos iniciales:", error);
-    errorMessage.value = 'No se pudieron cargar los datos iniciales.';
+    errorMessage.value = 'No se pudieron cargar los datos para el formulario.';
   }
 });
-
-watch(selectedDepartamentoNacimiento, async (id) => {
-  selectedProvinciaNacimiento.value = null;
-  selectedDistritoNacimiento.value = null;
-  provinciasNacimiento.value = [];
-  distritosNacimiento.value = [];
-  if (id) provinciasNacimiento.value = await DatosPersonalesService.getProvincias(id);
-});
-
-watch(selectedProvinciaNacimiento, async (id) => {
-  selectedDistritoNacimiento.value = null;
-  distritosNacimiento.value = [];
-  if (id) distritosNacimiento.value = await DatosPersonalesService.getDistritos(id);
-});
-
-watch(selectedDepartamentoResidencia, async (id) => {
-  selectedProvinciaResidencia.value = null;
-  selectedDistritoResidencia.value = null;
-  provinciasResidencia.value = [];
-  distritosResidencia.value = [];
-  if (id) provinciasResidencia.value = await DatosPersonalesService.getProvincias(id);
-});
-
-watch(selectedProvinciaResidencia, async (id) => {
-  selectedDistritoResidencia.value = null;
-  distritosResidencia.value = [];
-  if (id) distritosResidencia.value = await DatosPersonalesService.getDistritos(id);
-});
-
-const pad = (n) => n.toString().padStart(2, '0');
-
-const handleRegister = async () => {
-  errorMessage.value = '';
-  successMessage.value = '';
-  const { valid } = await registerFormRef.value.validate();
-  if (!valid) {
-    errorMessage.value = 'Por favor, complete todos los campos requeridos correctamente.';
-    return;
-  }
-
-  if (!selectedDepartamentoNacimiento.value || !selectedProvinciaNacimiento.value || !selectedDistritoNacimiento.value ||
-      !selectedDepartamentoResidencia.value || !selectedProvinciaResidencia.value || !selectedDistritoResidencia.value) {
-    errorMessage.value = 'Debe seleccionar el lugar de nacimiento y residencia completos.';
-    return;
-  }
-
-  formData.ubigeoNacimiento = selectedDistritoNacimiento.value;
-  formData.ubigeoResidencia = selectedDistritoResidencia.value;
-
-  loading.value = true;
-  try {
-    const data = await AspiranteService.registrarAspirante(formData);
-    successMessage.value = `¡Registro exitoso! Usuario: ${data.codUsuario}, ID: ${data.usuarioId}. Ahora puedes iniciar sesión.`;
-    
-    // Resetear campos del formulario
-    registerFormRef.value.reset();
-    
-    // Resetear Ubigeo Nacimiento
-    selectedDepartamentoNacimiento.value = null;
-
-    // Resetear Ubigeo Residencia
-    selectedDepartamentoResidencia.value = null;
-
-
-    setTimeout(() => router.push('/login'), 3000);
-  } catch (error) {
-    errorMessage.value = error.message || 'Ocurrió un error durante el registro.';
-    console.error("Error en handleRegister:", error);
-  } finally {
-    loading.value = false;
-  }
-};
 </script>
+
+<style scoped>
+  .v-card-actions {
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+</style>

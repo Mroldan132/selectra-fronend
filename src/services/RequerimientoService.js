@@ -37,35 +37,6 @@ class RequerimientoService {
         }
     }
 
-    async getAreas() {
-        try {
-            const response = await apiClient.get('/Areas');
-            return response.data;
-        } catch (error) {
-            console.error("Error al obtener áreas:", error.response || error);
-            throw new Error(error.response?.data?.message || "Error al cargar áreas");
-        }
-    }
-
-    async getCargos() {
-        try {
-            const response = await apiClient.get('/Cargos');
-            return response.data;
-        } catch (error) {
-            console.error("Error al obtener cargos:", error.response || error);
-            throw new Error(error.response?.data?.message || "Error al cargar cargos");
-        }
-    }
-
-    async getPersonalParaJefeDestino() {
-        try {
-            const response = await apiClient.get('/Personales/elegiblesComoJefe');
-            return response.data;
-        } catch (error) {
-            console.error("Error al obtener personal para jefe:", error.response || error);
-            throw new Error(error.response?.data?.message || "Error al cargar lista de jefes");
-        }
-    }
     async getEstadosRequerimientos() {
         try {
             const response = await apiClient.get('/RequerimientosPersonales/ListaEstadosRequerimientos');

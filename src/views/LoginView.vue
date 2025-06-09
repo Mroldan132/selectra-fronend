@@ -38,16 +38,25 @@
             </v-form>
           </v-card-text>
           <v-card-actions class="pa-4">
-            <v-spacer></v-spacer>
             <v-btn
               color="primary"
+              variant="outlined"
               @click="handleLogin"
               :loading="loading"
               :disabled="loading"
               large
-              block
+              class="w-50 mb-2"
             >
               Ingresar
+            </v-btn>            
+            <v-btn
+              color="secondary" 
+              variant="outlined"
+              @click="navigateToRegisterAspirante"
+              large
+              class="w-10 mb-2"
+            >
+              Registrarse como Aspirante
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -59,26 +68,23 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/authStore'; // Ajusta la ruta si es necesario
-
+import { useAuthStore } from '@/stores/authStore'; 
 const codUsuario = ref('');
 const clave = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
-const loginFormRef = ref(null); // Referencia al v-form para validación
+const loginFormRef = ref(null); 
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Reglas de validación de Vuetify
+
 const rules = {
   required: value => !!value || 'Este campo es requerido.',
-  codUsuarioLength: value => (value && value.length <= 50) || 'Máximo 50 caracteres.', // Ajusta según tu BD
-  // Puedes añadir más reglas (ej. para formato de email, longitud de contraseña)
+  codUsuarioLength: value => (value && value.length <= 50) || 'Máximo 50 caracteres.',
 };
 
 const handleLogin = async () => {
-  // Validar el formulario de Vuetify
   const { valid } = await loginFormRef.value.validate();
   if (!valid) {
     errorMessage.value = 'Por favor, corrija los errores en el formulario.';
@@ -102,11 +108,15 @@ const handleLogin = async () => {
     loading.value = false;
   }
 };
+
+const navigateToRegisterAspirante = () => {
+  router.push('/registro-aspirante'); 
+};
 </script>
 
 <style scoped>
 .login-page {
-  background-color: #f0f2f5; /* Un color de fondo suave para la página completa */
+  background-color: #f0f2f5; 
 }
 
 </style>

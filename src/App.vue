@@ -387,9 +387,15 @@ const menuSections = computed(() => {
       divider: true
     },
   ];
-  if (userRole === 'Solicitante' || userRole === 'JefeAprobador' || userRole === 'Administrador') {
+  if (userRole === 'Solicitante' || userRole === 'JefeAprobador') {
     sections.find(s => s.title === 'GESTIÓN').items.push(
       { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } }
+    );
+  }
+  if( userRole === 'Administrador') {
+    sections.find(s => s.title === 'GESTIÓN').items.push(
+      { title: 'Requerimientos Aprobados', icon: 'mdi-account-multiple-outline', to: { name: 'gestionRequerimientosAdm' } },
+      { title: 'Personal', icon: 'mdi-account-group-outline', to: { name: 'gestionPersonal' } } // <-- NUEVO ÍTEM
     );
   }
   return sections.filter(section => section.items.length > 0 || (section.title && !section.items));

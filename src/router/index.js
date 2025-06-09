@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import HomeView from '../views/HomeView.vue';
 import GestionRequerimientosView from '../views/GestionRequerimientosView.vue';
+import RegistroAspirantePage from '../views/RegistroAspirante.vue'; 
+import GestionRequerimientosAdmView from '../views/GestionRequerimientosAdmView.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
@@ -15,16 +17,35 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+    path: '/registro-aspirante', 
+    name: 'RegistroAspirante',
+    component: RegistroAspirantePage,
+    },
+    {
       path: '/login',
       name: 'login',
       component: LoginView
     },
+    
     {
       path: '/requerimientos',
       name: 'gestionRequerimientos',
       component: GestionRequerimientosView,
       meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] }
     },
+    {
+      path: '/requerimientosAdm',
+      name: 'gestionRequerimientosAdm',
+      component: GestionRequerimientosAdmView,
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+
+    },
+    { 
+      path: '/personal',
+      name: 'gestionPersonal',
+      component: () => import('@/views/GestionPersonal.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    }
   ]
 });
 

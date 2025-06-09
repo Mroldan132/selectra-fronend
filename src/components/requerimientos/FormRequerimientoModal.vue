@@ -154,6 +154,9 @@
 <script setup>
 import { ref, reactive, watch, onMounted, computed } from 'vue';
 import RequerimientoService from '@/services/RequerimientoService';
+import AreaService from '@/services/AreaService';
+import CargoService from '@/services/CargoService';
+import PersonalService from '@/services/PersonalService';
 
 const props = defineProps({
   visible: Boolean,
@@ -176,7 +179,6 @@ const initialState = () => ({
   sueldoPropuesto: null,
   fechaDeseadaIngreso: null,
   jefeDestinoId: null,
-  // Asegúrate de incluir historialDeAprobaciones si es parte del modelo local y se carga
   historialDeAprobaciones: [], 
 });
 
@@ -221,7 +223,7 @@ const estadoProcesadoInfo = computed(() => {
   }
   return { esProcesado: false, mensaje: '', color: 'info', icon: '' };
 });
-// Computada para deshabilitar/readonly el formulario y el botón de guardar
+
 const formularioDeshabilitadoPorEstado = computed(() => {
   return estadoProcesadoInfo.value.esProcesado;
 });
@@ -287,11 +289,8 @@ watch(() => props.visible, async (newVal) => {
           loadingForm.value = false;
         }
       } else {
-        // Si modoEditar es true pero no hay datos en requerimientoParaEditar, usar los datos de la prop directamente
-        // Esto es útil si la lista ya tiene todos los datos y no se hace una llamada a getRequerimientoPorId
         if (props.requerimientoParaEditar) {
             Object.assign(requerimientoLocal, props.requerimientoParaEditar);
-            // Asegurar que historialDeAprobaciones se copie si existe en la prop
             requerimientoLocal.historialDeAprobaciones = props.requerimientoParaEditar.historialDeAprobaciones || [];
         } else {
             console.error('Modal: Se intentó editar pero props.requerimientoParaEditar no es válido.');
@@ -315,9 +314,9 @@ const cargarDatosDropdown = async () => {
       personalElegibleComoJefe.value
     ] = await Promise.all([
       RequerimientoService.getTiposRequerimiento(),
-      RequerimientoService.getAreas(),
-      RequerimientoService.getCargos(),
-      RequerimientoService.getPersonalParaJefeDestino()
+      AreaService.getAreas(),
+      CargoService.getCargos(),
+      PersonalService.getPersonalParaJefeDestino()
     ]);
   } catch (error) {
     errorForm.value = 'Error al cargar datos para el formulario. ' + error.message;

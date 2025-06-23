@@ -58,6 +58,13 @@ const router = createRouter({
       name: 'portalOfertas',
       component: () => import('@/views/PortalDeOfertas.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
+    {
+       path: '/NivelAcademicos',
+       name: 'gestionNivelAcademicos',
+       component: () => import('@/views/GestionNivelAcademicosView.vue'),
+       meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
     }
   ]
 });

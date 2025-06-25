@@ -104,15 +104,33 @@
                 :readonly="formularioDeshabilitadoPorEstado"
               ></v-text-field>
             </v-col>
+            
+            <!-- INICIO: MODIFICACIÓN FECHA -->
             <v-col cols="12" md="4">
-              <v-text-field
-                v-model="requerimientoLocal.fechaDeseadaIngreso"
-                label="Fecha Deseada Ingreso (Opc.)"
-                type="date"
-                variant="outlined" density="comfortable"
-                :readonly="formularioDeshabilitadoPorEstado"
-              ></v-text-field>
+                <v-menu v-model="dateMenuIngreso" :close-on-content-click="false" transition="scale-transition">
+                    <template v-slot:activator="{ props }">
+                        <v-text-field
+                            v-model="formattedFechaDeseadaIngreso"
+                            label="Fecha Deseada Ingreso (Opc.)"
+                            prepend-inner-icon="mdi-calendar"
+                            variant="outlined"
+                            readonly
+                            v-bind="props"
+                            density="comfortable"
+                            :rules="[rules.fechaNoMenorAHoy]"
+                            :readonly="formularioDeshabilitadoPorEstado"
+                        />
+                    </template>
+                    <v-date-picker
+                        v-model="requerimientoLocal.fechaDeseadaIngreso"
+                        @update:model-value="dateMenuIngreso = false"
+                        hide-header
+                        :min="hoy"
+                    />
+                </v-menu>
             </v-col>
+            <!-- FIN: MODIFICACIÓN FECHA -->
+
             <v-col cols="12" md="4">
                 <v-select
                 v-model="requerimientoLocal.jefeDestinoId"
@@ -160,7 +178,7 @@ import PersonalService from '@/services/PersonalService';
 
 const props = defineProps({
   visible: Boolean,
-  requerimientoParaEditar: Object, 
+  requerimientoParaEditar: Object,
   modoEditar: Boolean,
 });
 
@@ -169,8 +187,13 @@ const emit = defineEmits(['cerrar', 'requerimientoGuardado']);
 const formModalRef = ref(null);
 const visibleLocal = ref(props.visible);
 
+// --- INICIO: LÓGICA DE FECHA ---
+const dateMenuIngreso = ref(false);
+const hoy = new Date().toISOString().slice(0, 10);
+// --- FIN: LÓGICA DE FECHA ---
+
 const initialState = () => ({
-  requerimientoId: null, 
+  requerimientoId: null,
   tipoRequerimientoId: null,
   tituloRequerimiento: '',
   areaId: null,
@@ -179,7 +202,7 @@ const initialState = () => ({
   sueldoPropuesto: null,
   fechaDeseadaIngreso: null,
   jefeDestinoId: null,
-  historialDeAprobaciones: [], 
+  historialDeAprobaciones: [],
 });
 
 const requerimientoLocal = reactive(initialState());
@@ -193,55 +216,40 @@ const loadingDropdowns = ref(false);
 const loadingForm = ref(false);
 const errorForm = ref('');
 
-// Computada para la información del estado procesado (para la alerta)
 const estadoProcesadoInfo = computed(() => {
-  const reqData = props.requerimientoParaEditar
-
+  const reqData = props.requerimientoParaEditar;
   if (!reqData || !reqData.historialDeAprobaciones || reqData.historialDeAprobaciones.length === 0) {
-    return { esProcesado: false, mensaje: '', color: 'info', icon: '' };
+    return { esProcesado: false };
   }
-  const ultimoEstado = reqData.historialDeAprobaciones[0]; 
-
+  const ultimoEstado = reqData.historialDeAprobaciones[0];
   if (ultimoEstado && ultimoEstado.codigoEstado) {
     const estadoLower = ultimoEstado.codigoEstado.toLowerCase();
-    if (estadoLower.includes('apr')) { 
-      return { 
-        esProcesado: true, 
-        mensaje: 'Este requerimiento ya ha sido APROBADO y no puede ser modificado.', 
-        color: 'success',
-        icon: 'mdi-check-circle-outline'
-      };
+    if (estadoLower.includes('apr')) {
+      return { esProcesado: true, mensaje: 'Este requerimiento ya ha sido APROBADO y no puede ser modificado.', color: 'success', icon: 'mdi-check-circle-outline' };
     }
-    if (estadoLower.includes('rec')) { 
-      return { 
-        esProcesado: true, 
-        mensaje: 'Este requerimiento ha sido RECHAZADO y no puede ser modificado.', 
-        color: 'error',
-        icon: 'mdi-close-circle-outline'
-      };
+    if (estadoLower.includes('rec')) {
+      return { esProcesado: true, mensaje: 'Este requerimiento ha sido RECHAZADO y no puede ser modificado.', color: 'error', icon: 'mdi-close-circle-outline' };
     }
   }
-  return { esProcesado: false, mensaje: '', color: 'info', icon: '' };
+  return { esProcesado: false };
 });
 
-const formularioDeshabilitadoPorEstado = computed(() => {
-  return estadoProcesadoInfo.value.esProcesado;
-});
-
+const formularioDeshabilitadoPorEstado = computed(() => estadoProcesadoInfo.value.esProcesado);
 
 const rules = {
-  required: value => {
-    if (formularioDeshabilitadoPorEstado.value) return true; // Si está deshabilitado, no validar
-    return (value !== null && value !== undefined && value !== '') || 'Este campo es requerido.'
-  },
-  maxLength: (length) => (value) => {
-    if (formularioDeshabilitadoPorEstado.value) return true;
-    return (!value || value.length <= length) || `Máximo ${length} caracteres.`
-  },
-  positiveNumber: value => {
-    if (formularioDeshabilitadoPorEstado.value) return true;
-    return (value === null || value === undefined || value === '' || parseFloat(value) >= 0) || 'Debe ser un número positivo.'
-  },
+  required: value => (formularioDeshabilitadoPorEstado.value) || (value !== null && value !== undefined && value !== '') || 'Este campo es requerido.',
+  maxLength: (length) => (value) => (formularioDeshabilitadoPorEstado.value) || (!value || value.length <= length) || `Máximo ${length} caracteres.`,
+  positiveNumber: value => (formularioDeshabilitadoPorEstado.value) || (value === null || value === undefined || value === '' || parseFloat(value) >= 0) || 'Debe ser un número positivo.',
+  // --- INICIO: REGLA DE FECHA ---
+  fechaNoMenorAHoy: value => {
+    if (formularioDeshabilitadoPorEstado.value || !value) return true;
+    const fechaSeleccionada = new Date(value);
+    const fechaHoy = new Date();
+    fechaSeleccionada.setUTCHours(0, 0, 0, 0);
+    fechaHoy.setUTCHours(0, 0, 0, 0);
+    return fechaSeleccionada >= fechaHoy || 'La fecha no puede ser anterior al día actual.';
+  }
+  // --- FIN: REGLA DE FECHA ---
 };
 
 const tituloModal = computed(() => {
@@ -249,56 +257,41 @@ const tituloModal = computed(() => {
     return props.modoEditar ? 'Editar Requerimiento' : 'Crear Nuevo Requerimiento';
 });
 
+// --- INICIO: COMPUTADA PARA FORMATEAR FECHA ---
+const formatDate = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    return new Date(d.getTime() + d.getTimezoneOffset() * 60000).toLocaleDateString('es-ES');
+}
+const formattedFechaDeseadaIngreso = computed(() => formatDate(requerimientoLocal.fechaDeseadaIngreso));
+// --- FIN: COMPUTADA PARA FORMATEAR FECHA ---
+
 watch(() => props.visible, async (newVal) => {
   visibleLocal.value = newVal;
   if (newVal) {
     errorForm.value = '';
-    formModalRef.value?.resetValidation(); 
+    formModalRef.value?.resetValidation();
 
-    if (props.modoEditar) {
-      if (props.requerimientoParaEditar && props.requerimientoParaEditar.requerimientoId) {
-        loadingForm.value = true;
-        try {
-          const datosCompletosDelServicio = await RequerimientoService.getRequerimientoPorId(props.requerimientoParaEditar.requerimientoId);
-          if (datosCompletosDelServicio) {
-            Object.assign(requerimientoLocal, datosCompletosDelServicio);
-            requerimientoLocal.sueldoPropuesto = datosCompletosDelServicio.sueldoPropuesto || null;
-            if (datosCompletosDelServicio.fechaDeseadaIngreso) {
-              if (typeof datosCompletosDelServicio.fechaDeseadaIngreso === 'string' && datosCompletosDelServicio.fechaDeseadaIngreso.includes('T')) {
-                requerimientoLocal.fechaDeseadaIngreso = datosCompletosDelServicio.fechaDeseadaIngreso.split('T')[0];
-              } else {
-                requerimientoLocal.fechaDeseadaIngreso = datosCompletosDelServicio.fechaDeseadaIngreso;
-              }
-            } else {
-              requerimientoLocal.fechaDeseadaIngreso = null;
-            }
-            requerimientoLocal.jefeDestinoId = datosCompletosDelServicio.jefeDestinoId || null;
-            requerimientoLocal.requerimientoId = datosCompletosDelServicio.requerimientoId || null;
-            // Asegurar que historialDeAprobaciones también se copie si viene del servicio
-            requerimientoLocal.historialDeAprobaciones = datosCompletosDelServicio.historialDeAprobaciones || [];
-          } else {
-            console.error('Modal: El servicio getRequerimientoPorId no devolvió datos para el ID:', props.requerimientoParaEditar.requerimientoId);
-            errorForm.value = 'No se pudieron cargar los detalles completos del requerimiento.';
-            Object.assign(requerimientoLocal, initialState());
-          }
-        } catch (err) {
-          console.error('Modal: Error al llamar a getRequerimientoPorId:', err);
-          errorForm.value = err.message || 'Error crítico al cargar los datos del requerimiento.';
-          Object.assign(requerimientoLocal, initialState()); 
-        } finally {
-          loadingForm.value = false;
-        }
-      } else {
-        if (props.requerimientoParaEditar) {
-            Object.assign(requerimientoLocal, props.requerimientoParaEditar);
-            requerimientoLocal.historialDeAprobaciones = props.requerimientoParaEditar.historialDeAprobaciones || [];
+    if (props.modoEditar && props.requerimientoParaEditar?.requerimientoId) {
+      loadingForm.value = true;
+      try {
+        const data = await RequerimientoService.getRequerimientoPorId(props.requerimientoParaEditar.requerimientoId);
+        Object.assign(requerimientoLocal, data);
+        // --- INICIO: MANEJO DE FECHA AL CARGAR ---
+        if (data.fechaDeseadaIngreso) {
+            requerimientoLocal.fechaDeseadaIngreso = new Date(data.fechaDeseadaIngreso + 'T00:00:00');
         } else {
-            console.error('Modal: Se intentó editar pero props.requerimientoParaEditar no es válido.');
-            errorForm.value = 'No hay información válida del requerimiento para editar/ver.';
-            Object.assign(requerimientoLocal, initialState());
+            requerimientoLocal.fechaDeseadaIngreso = null;
         }
+        // --- FIN: MANEJO DE FECHA AL CARGAR ---
+      } catch (err) {
+        errorForm.value = 'Error al cargar los detalles del requerimiento.';
+        console.error('Error en watch visible:', err);
+        Object.assign(requerimientoLocal, initialState());
+      } finally {
+        loadingForm.value = false;
       }
-    } else { 
+    } else {
       Object.assign(requerimientoLocal, initialState());
     }
   }
@@ -307,47 +300,31 @@ watch(() => props.visible, async (newVal) => {
 const cargarDatosDropdown = async () => {
   loadingDropdowns.value = true;
   try {
-    [
-      tiposRequerimiento.value,
-      areas.value,
-      cargos.value,
-      personalElegibleComoJefe.value
-    ] = await Promise.all([
+    [tiposRequerimiento.value, areas.value, cargos.value, personalElegibleComoJefe.value] = await Promise.all([
       RequerimientoService.getTiposRequerimiento(),
       AreaService.getAreas(),
       CargoService.getCargos(),
       PersonalService.getPersonalParaJefeDestino()
     ]);
   } catch (error) {
-    errorForm.value = 'Error al cargar datos para el formulario. ' + error.message;
+    errorForm.value = 'Error al cargar datos para el formulario.';
     console.error(error);
   } finally {
     loadingDropdowns.value = false;
   }
 };
 
-onMounted(cargarDatosDropdown); 
+onMounted(cargarDatosDropdown);
 
-const cerrar = () => {
-  emit('cerrar');
-};
-
-const manejarCierreExterno = () => {
-    if (!loadingForm.value) {
-        cerrar();
-    }
-};
+const cerrar = () => emit('cerrar');
+const manejarCierreExterno = () => { if (!loadingForm.value) cerrar(); };
 
 const guardarRequerimiento = async () => {
-  if (formularioDeshabilitadoPorEstado.value) {
-    console.warn("Intento de guardar un requerimiento ya procesado.");
-    return;
-  }
+  if (formularioDeshabilitadoPorEstado.value) return;
 
-  if (!formModalRef.value) return;
-  const validationResult = await formModalRef.value.validate();
-  if (!validationResult.valid) {
-    errorForm.value = 'Por favor, complete todos los campos requeridos correctamente.';
+  const { valid } = await formModalRef.value.validate();
+  if (!valid) {
+    errorForm.value = 'Por favor, complete los campos requeridos correctamente.';
     return;
   }
 
@@ -355,36 +332,35 @@ const guardarRequerimiento = async () => {
   errorForm.value = '';
 
   const payload = { ...requerimientoLocal };
+  
+  // --- INICIO: FORMATEO DE FECHA ANTES DE ENVIAR ---
+  const toISODateString = (date) => {
+      if (!(date instanceof Date)) return date || null;
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  };
+  payload.fechaDeseadaIngreso = toISODateString(payload.fechaDeseadaIngreso);
+  // --- FIN: FORMATEO DE FECHA ANTES DE ENVIAR ---
 
-  payload.sueldoPropuesto = (payload.sueldoPropuesto === '' || payload.sueldoPropuesto === undefined || payload.sueldoPropuesto === null)
-    ? null
-    : parseFloat(payload.sueldoPropuesto);
-
-  payload.fechaDeseadaIngreso = payload.fechaDeseadaIngreso || null;
-
-  payload.jefeDestinoId = (payload.jefeDestinoId === '' || payload.jefeDestinoId === undefined || payload.jefeDestinoId === null)
-    ? null
-    : parseInt(payload.jefeDestinoId, 10); 
-
+  payload.sueldoPropuesto = (payload.sueldoPropuesto === '' || payload.sueldoPropuesto == null) ? null : parseFloat(payload.sueldoPropuesto);
+  payload.jefeDestinoId = (payload.jefeDestinoId === '' || payload.jefeDestinoId == null) ? null : parseInt(payload.jefeDestinoId, 10);
+  
   try {
-    if (requerimientoLocal.requerimientoId && props.modoEditar) {
+    if (props.modoEditar) {
       await RequerimientoService.actualizarRequerimiento(requerimientoLocal.requerimientoId, payload);
-      emit('requerimientoGuardado', { esNuevo: false }); // Siempre es actualización aquí
-    } else { 
-      if ('requerimientoId' in payload) {
-        if (!payload.requerimientoId || !props.modoEditar) { 
-            delete payload.requerimientoId;
-        }
-      }
+    } else {
+      delete payload.requerimientoId;
       await RequerimientoService.crearRequerimiento(payload);
-      emit('requerimientoGuardado', { esNuevo: true });
     }
-    
+    emit('requerimientoGuardado');
   } catch (error) {
-    errorForm.value = error.message || 'Ocurrió un error al guardar el requerimiento.';
-    console.error('Error en guardarRequerimiento:', error.response?.data || error.message || error);
+    errorForm.value = error.message || 'Ocurrió un error al guardar.';
+    console.error('Error en guardarRequerimiento:', error.response?.data || error);
   } finally {
-    loadingForm.value = false; 
+    loadingForm.value = false;
   }
 };
 </script>

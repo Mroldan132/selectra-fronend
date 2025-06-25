@@ -52,13 +52,23 @@
                     <v-col cols="12" md="6">
                       <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" item-value="id" item-title="nombre" label="Tipo de Documento" :rules="[rules.required]" variant="outlined" density="compact" />
                     </v-col>
-                    <v-col cols="12" md="6"><v-text-field v-model="formData.numeroDocumento" label="Número de Documento" :rules="[rules.required, rules.maxLength(20)]" variant="outlined" density="compact" /></v-col>
+                    <!-- INICIO: MODIFICACIÓN -->
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="formData.numeroDocumento"
+                            label="Número de Documento"
+                            :rules="[rules.required, rules.maxLength(20), rules.numeric]"
+                            variant="outlined"
+                            density="compact"
+                        />
+                    </v-col>
+                    <!-- FIN: MODIFICACIÓN -->
                      <v-col cols="12" md="6"><v-text-field v-model="formData.emailPersonal" label="Email Personal" type="email" :rules="[rules.required, rules.email]" variant="outlined" density="compact" /></v-col>
                     <v-col cols="12" md="6"><v-text-field v-model="formData.telefono" label="Teléfono (Opcional)" variant="outlined" density="compact" /></v-col>
                   </v-row>
                 </v-card-text>
               </v-window-item>
-              
+
               <v-window-item :value="3">
                 <v-card-text class="pa-md-8 pa-4">
                    <div class="text-center mb-8">
@@ -70,29 +80,29 @@
                    <v-row>
                      <v-col cols="12" md="6">
                        <v-menu v-model="dateMenu" :close-on-content-click="false" transition="scale-transition">
-                          <template #activator="{ props }">
-                            <v-text-field v-model="formattedFechaNacimiento" label="Fecha de Nacimiento" :rules="[rules.required]" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact"/>
-                          </template>
-                          <v-date-picker v-model="formData.fechaNacimiento" @update:model-value="dateMenu = false" hide-header :max="new Date().toISOString().slice(0,10)" />
-                        </v-menu>
+                         <template #activator="{ props }">
+                           <v-text-field v-model="formattedFechaNacimiento" label="Fecha de Nacimiento" :rules="[rules.required]" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact"/>
+                         </template>
+                         <v-date-picker v-model="formData.fechaNacimiento" @update:model-value="dateMenu = false" hide-header :max="new Date().toISOString().slice(0,10)" />
+                       </v-menu>
                      </v-col>
                       <v-col cols="12" md="6">
                         <v-select v-model="formData.nivelAcademicoId" :items="nivelesAcademicos" item-value="id" item-title="nombre" label="Nivel Académico" :rules="[rules.required]" variant="outlined" density="compact" />
-                     </v-col>
+                      </v-col>
                    </v-row>
                 </v-card-text>
               </v-window-item>
 
               <v-window-item :value="4">
                  <v-card-text class="text-center pa-16">
-                    <v-scale-transition>
-                      <v-icon v-if="success" class="mb-4" color="success" icon="mdi-check-decagram-outline" size="88"></v-icon>
-                    </v-scale-transition>
-                    <h2 class="text-h4 font-weight-bold mb-2">¡Registro Exitoso!</h2>
-                    <p class="text-medium-emphasis">
-                      Hemos creado tu cuenta. Serás redirigido a la página de inicio de sesión en unos segundos.
-                    </p>
-                    <v-progress-linear indeterminate color="primary" class="mt-8"></v-progress-linear>
+                   <v-scale-transition>
+                     <v-icon v-if="success" class="mb-4" color="success" icon="mdi-check-decagram-outline" size="88"></v-icon>
+                   </v-scale-transition>
+                   <h2 class="text-h4 font-weight-bold mb-2">¡Registro Exitoso!</h2>
+                   <p class="text-medium-emphasis">
+                     Hemos creado tu cuenta. Serás redirigido a la página de inicio de sesión en unos segundos.
+                   </p>
+                   <v-progress-linear indeterminate color="primary" class="mt-8"></v-progress-linear>
                  </v-card-text>
               </v-window-item>
 
@@ -100,7 +110,7 @@
           </v-form>
 
           <v-divider></v-divider>
-          
+
           <v-card-actions class="pa-4" v-if="step < 4">
              <v-alert v-if="errorMessage" type="error" density="compact" variant="tonal" class="mr-auto" :text="errorMessage" />
              <v-spacer v-else></v-spacer>
@@ -113,22 +123,22 @@
         </v-card>
 
          <div class="text-center mt-6">
-            <p class="text-medium-emphasis">¿Ya tienes una cuenta? 
-              <router-link to="/login" class="text-secondary font-weight-bold">Inicia Sesión</router-link>
-            </p>
-          </div>
+           <p class="text-medium-emphasis">¿Ya tienes una cuenta?
+             <router-link to="/login" class="text-secondary font-weight-bold">Inicia Sesión</router-link>
+           </p>
+         </div>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue'; // Se añade watch
 import { useRouter } from 'vue-router';
 import AspiranteService from '@/services/AspiranteService';
 import NivelAcademicoService from '@/services/NivelAcademicoService';
 import DatosPersonalesService from '@/services/DatosPersonalesService';
-import UsuarioService from '@/services/UsuarioService'; // <-- Importamos el servicio de usuario
+import UsuarioService from '@/services/UsuarioService';
 import UbigeoSelector from '@/components/utils/UbigeoSelector.vue';
 
 const router = useRouter();
@@ -153,7 +163,6 @@ const formData = reactive({
 const nivelesAcademicos = ref([]);
 const tiposDocumento = ref([]);
 
-// --- NUEVO ESTADO PARA LA VALIDACIÓN DE USUARIO ---
 const verifyingUsername = ref(false);
 const usernameExists = ref(false);
 let debounceTimer = null;
@@ -163,46 +172,52 @@ const formattedFechaNacimiento = computed(() => {
   return formData.fechaNacimiento ? new Date(formData.fechaNacimiento).toLocaleDateString('es-ES') : '';
 });
 
-// --- Validation Rules ---
+// --- INICIO: MODIFICACIÓN EN REGLAS ---
 const rules = {
   required: value => !!value || 'Este campo es obligatorio.',
   minLength: length => value => (value && value.length >= length) || `Mínimo ${length} caracteres.`,
-  maxLength: length => value => (value && value.length <= length) || `Máximo ${length} caracteres.`,
+  maxLength: length => value => (!value || value.length <= length) || `Máximo ${length} caracteres.`,
   email: value => /.+@.+\..+/.test(value) || 'El formato del email no es válido.',
+  numeric: value => /^\d*$/.test(value) || 'Este campo solo debe contener números.', // Permite campo vacío
 };
+// --- FIN: MODIFICACIÓN EN REGLAS ---
 
-// --- NUEVA REGLA DE VALIDACIÓN PERSONALIZADA ---
+// --- INICIO: NUEVO WATCH PARA FILTRAR EN TIEMPO REAL ---
+watch(() => formData.numeroDocumento, (newValue, oldValue) => {
+    if (newValue && !/^\d*$/.test(newValue)) {
+        // Si el nuevo valor no son solo dígitos, lo revierte al valor anterior válido.
+        formData.numeroDocumento = oldValue;
+    }
+});
+// --- FIN: NUEVO WATCH ---
+
+
 const usernameRule = () => !usernameExists.value || 'Este nombre de usuario ya está en uso.';
 
-// --- NUEVO MÉTODO PARA VERIFICAR USUARIO ---
 const checkUsername = () => {
   clearTimeout(debounceTimer);
   if (!formData.codUsuario) {
     usernameExists.value = false;
     return;
   }
-  
+
   debounceTimer = setTimeout(async () => {
     verifyingUsername.value = true;
-    usernameExists.value = false; // Resetear antes de la comprobación
+    usernameExists.value = false;
     try {
       const existe = await UsuarioService.verificarUsuario(formData.codUsuario);
       usernameExists.value = existe;
-      // Forzar una re-validación del campo específico
-      registerFormRef.value?.validate(); 
+      registerFormRef.value?.validate();
     } catch (error) {
       errorMessage.value = error.message || 'Error de conexión al verificar usuario.';
     } finally {
       verifyingUsername.value = false;
     }
-  }, 500); // 500ms de retraso para no saturar la API
+  }, 500);
 };
-
 
 const siguientePaso = async () => {
   const { valid } = await registerFormRef.value.validate();
-  
-  // No permitir avanzar si el usuario ya existe o se está verificando
   if (usernameExists.value) {
     errorMessage.value = "Por favor, elige otro nombre de usuario.";
     return;
@@ -222,17 +237,17 @@ const siguientePaso = async () => {
 
 const handleRegister = async () => {
   errorMessage.value = '';
-  // Re-validar por si acaso
   await checkUsername();
   if (usernameExists.value) {
-    step.value = 1; // Regresar al paso del error
+    step.value = 1;
     errorMessage.value = "Este nombre de usuario ya está en uso.";
     return;
   }
 
   const { valid } = await registerFormRef.value.validate();
   if (!valid) {
-    alert('Por favor, completa todos los campos requeridos correctamente.');
+    // Se cambia el alert por un mensaje en el formulario
+    errorMessage.value = 'Por favor, completa todos los campos requeridos correctamente.';
     return;
   }
 
@@ -245,11 +260,11 @@ const handleRegister = async () => {
 
     await AspiranteService.registrarAspirante(payload);
     success.value = true;
-    step.value = 4; // Avanzar a la pantalla de éxito
+    step.value = 4;
     setTimeout(() => router.push('/login'), 4000);
 
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Ocurrió un error durante el registro.';
+    errorMessage.value = error;
   } finally {
     loading.value = false;
   }

@@ -59,6 +59,7 @@
 </template>
 
 <script setup>
+    
     import { ref, onMounted } from 'vue';
     import NivelAcademicosModal from '@/components/NivelAcademicos/NivelAcademicosModal.vue';
     import NivelAcademicosService from '@/services/NivelAcademicosService';
@@ -97,19 +98,35 @@
       }
     };
 
-    const showSnackbar = (text, color) => {
-      snackbar.value.text = text;
-      snackbar.value.color = color;
-      snackbar.value.show = true;
-    };
+    const showSnackbar = (text, color = 'success') => {
+      snackbar.value = { show: true, text, color };
+};
 
-    const abrirModal = () => {
+
+    const crearNivelNuevo = () => {
       modoEditar.value = false;
-      nivelSeleccionado.value = {....item};
+      nivelSeleccionado.value = null;
         dialogVisible.value = true;
     };
      
-    const cerarNivelNuevo = () => {
-      dialogVisible.value = false;
-        nivelSeleccionado.value = null;
+    const crearNivelEditar = (item) => {
+    modoEditar.value = true;  
+   nivelSeleccionado.value = {....item};
+    dialogVisible.value = true;
     };
+    const cerrarModal = () => {
+      dialogVisible.value = false;
+      nivelSeleccionado.value = null;
+    };
+    const handleGuardado = () => {
+    
+      cerrarModal();
+     const message = modoEditar.value ? 'Nivel académico actualizado correctamente.' : 'Nivel académico creado correctamente.';
+      showSnackbar(message);
+        fetchNiveles();
+    };
+
+    onMounted(() => {
+      fetchNiveles();
+    });
+    </script>

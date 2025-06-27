@@ -136,7 +136,7 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'; // Se añade watch
 import { useRouter } from 'vue-router';
 import AspiranteService from '@/services/AspiranteService';
-import NivelAcademicoService from '@/services/NivelAcademicoService';
+import NivelAcademicoService from '@/services/NivelAcademicosService';
 import DatosPersonalesService from '@/services/DatosPersonalesService';
 import UsuarioService from '@/services/UsuarioService';
 import UbigeoSelector from '@/components/utils/UbigeoSelector.vue';

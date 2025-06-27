@@ -61,7 +61,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import AreaModal from '@/components/Areas/AreaModal.vue'; 
+import AreaModal from '@/components/Area/AreaModal.vue'; 
 import AreaService from '@/services/AreaService'; 
 
 const loading = ref(true);

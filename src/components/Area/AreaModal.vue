@@ -95,7 +95,7 @@ const guardar = async () => {
     errorForm.value = '';
     try {
       if (props.modoEditar) {
-        await AreaService.actualizarArea(formData);
+        await AreaService.actualizarArea(formData.areaId,formData);
       } else {
         await AreaService.crearArea(formData);
       }

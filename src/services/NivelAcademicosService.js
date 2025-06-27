@@ -3,7 +3,7 @@ import apiClient  from "./axiosInstance";
 class NivelAcademicosService {
     async obtenerNivelAcademicos() {
         try {
-            const response = await apiClient.get('/NivelAcademicos);
+            const response = await apiClient.get('/NivelAcademicos');
             return response.data;
         } catch (error) {
             const errorMessage =
@@ -15,6 +15,8 @@ class NivelAcademicosService {
             throw new Error(errorMessage);
         }
     }
+
+    
 
     async crearNivelAcademico(nivelAcademico) {
         try {
@@ -30,9 +32,9 @@ class NivelAcademicosService {
             throw new Error(errorMessage);
         }
     }
-    async actualizarNivelAcademico(id, nivelAcademico) {
+    async actualizarNivelAcademico(nivelAcademico) {
         try {
-            const response = await apiClient.put(`/NivelAcademicos/${id}`, nivelAcademico);
+            const response = await apiClient.put(`/NivelAcademicos`, nivelAcademico);
             return response.data;
         } catch (error) {
             const errorMessage =
@@ -46,4 +48,4 @@ class NivelAcademicosService {
     }
 }
 
-export default new NivelAcademicoService();
+export default new NivelAcademicosService();

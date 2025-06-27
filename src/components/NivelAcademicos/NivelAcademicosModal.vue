@@ -6,6 +6,7 @@
                     <v-icon class="mr-2">
                         {{ modoEditar ? 'mdi-pencil-box-outline' : 'mdi-plus-box-outline' }}
                     </v-icon>
+                    {{ tituloModal }}
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn icon dark @click="cerrar">
@@ -19,7 +20,7 @@
                     <v-row>
                         <v-col cols="12">
                             <v-text-field v-model="formData.nombre"
-                                          label="Nombre del Nivel Académico"
+                                          label="Nombre del Nivel Acadï¿½mico"
                                           :rules="[rules.required, rules.maxLength(100)]"
                                           variant="outlined"
                                           density="comfortable"
@@ -50,6 +51,7 @@
         nivelAcademicoParaEditar: Object,
         modoEditar: Boolean,
     });
+
     const emit = defineEmits(['cerrar', 'guardado']);
 
     const visibleLocal = ref(props.visible);
@@ -61,14 +63,14 @@
         nivelAcademicoId: 0,
         nombre: ''
     });
+
     const formData = reactive(getInitialData());
 
-    const tituloModal = computed(() => (props.modoEditar ? 'Editar Nivel Académico' : 'Nuevo Nivel Académico'));
-)
+    const tituloModal = computed(() => (props.modoEditar ? 'Editar Nivel Acadï¿½mico' : 'Nuevo Nivel Acadï¿½mico'));
 
     const rules = {
         required: v => !!v || 'Este campo es requerido.',
-        maxLength: length => v => !v || v.length <= length || `Máximo ${length} caracteres.`
+        maxLength: length => v => !v || v.length <= length || `Mï¿½ximo ${length} caracteres.`
     };
 
     const guardar = async () => {
@@ -81,26 +83,29 @@
                 if (props.modoEditar) {
                     await NivelAcademicosService.actualizarNivelAcademico(formData);
                 } else {
-                    await NivelAcademicoService.crearNivelAcademico(formData);
+                    await NivelAcademicosService.crearNivelAcademico(formData);
                 }
                 emit('guardado');
             } catch (error) {
-                errorForm.value = error.message || 'Ocurrió un error al guardar.';
+                errorForm.value = error.message || 'Ocurriï¿½ un error al guardar.';
                 console.error(error);
             } finally {
                 loadingForm.value = false;
             }
         }
     };
+
     const cerrar = () => {
         if (loadingForm.value) return;
         emit('cerrar');
     };
+
     watch(() => props.visible, (newVal) => {
         visibleLocal.value = newVal;
         if (newVal) {
             errorForm.value = '';
             formRef.value?.resetValidation();
+
             if (props.modoEditar && props.nivelAcademicoParaEditar) {
                 Object.assign(formData, props.nivelAcademicoParaEditar);
             } else {

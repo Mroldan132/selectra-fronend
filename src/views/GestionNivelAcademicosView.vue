@@ -4,7 +4,7 @@
       <v-toolbar flat color="white">
         <v-toolbar-title class="font-weight-bold text-grey-darken-2"> 
           <v-icon class="mr-3">mdi-school</v-icon>
-          Gestión de Niveles Académicos
+          Gestiï¿½n de Niveles Acadï¿½micos
         </v-toolbar-title>
           <v-divider class="mx-2" vertical></v-divider>
         <v-spacer></v-spacer>
@@ -42,9 +42,9 @@
         </v-data-table>
     </v-card>
 
-      <NivelAcademicoModal
+      <NivelAcademicosModal
         :visible="dialogVisible"
-        :nivel-para-editar="nivelSeleccionado"
+        :nivelAcademicoParaEditar="nivelSeleccionado"
         :modo-editar="modoEditar"
         @cerrar="cerrarModal"
        @nivel-guardado="handleGuardado"
@@ -66,13 +66,11 @@
 
     const loading = ref(true);
     const search = ref('');
-    const tipoNivel = ref([]);
+    const niveles = ref([]);
 
     const dialogVisible = ref(false);
-    const dialogdeleteVisible = ref(false);
     const modoEditar = ref(false);
     const nivelSeleccionado = ref(null);
-    const tipoNivelParaEliminar = ref(null);
 
     const snackbar = ref({
       show: false,
@@ -89,10 +87,10 @@
     const fetchNiveles = async () => {
      loading.value = true;
       try {
-        tipoNivel.value = await NivelAcademicosService.getNivelesAcademicos();
+        niveles.value = await NivelAcademicosService.obtenerNivelAcademicos();
       } catch (error) {
-        console.error('Error al cargar los niveles académicos:', error);
-        showSnackbar('Error al cargar los niveles académicos', 'error');
+        console.error('Error al cargar los niveles acadï¿½micos:', error);
+        showSnackbar('Error al cargar los niveles acadï¿½micos', 'error');
       } finally {
         loading.value = false;
       }
@@ -110,23 +108,21 @@
     };
      
     const crearNivelEditar = (item) => {
-    modoEditar.value = true;  
-   nivelSeleccionado.value = {....item};
-    dialogVisible.value = true;
+     modoEditar.value = true; 
+     nivelSeleccionado.value = {...item};
+     dialogVisible.value = true;
     };
     const cerrarModal = () => {
       dialogVisible.value = false;
       nivelSeleccionado.value = null;
     };
     const handleGuardado = () => {
-    
+      debugger
       cerrarModal();
-     const message = modoEditar.value ? 'Nivel académico actualizado correctamente.' : 'Nivel académico creado correctamente.';
+     const message = modoEditar.value ? 'Nivel acadï¿½mico actualizado correctamente.' : 'Nivel acadï¿½mico creado correctamente.';
       showSnackbar(message);
         fetchNiveles();
     };
 
-    onMounted(() => {
-      fetchNiveles();
-    });
+    onMounted(fetchNiveles);
     </script>

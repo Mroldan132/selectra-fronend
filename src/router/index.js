@@ -70,7 +70,13 @@ const router = createRouter({
       name: 'gestionAreas',
       component: () => import('@/views/GestionAreasView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
-    }
+      },
+    {
+       path: '/NivelAcademicos',
+       name: 'gestionNivelAcademicos',
+       component: () => import('@/views/GestionNivelAcademicosView.vue'),
+       meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
   ]
 });
 

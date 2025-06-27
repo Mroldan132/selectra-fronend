@@ -64,6 +64,12 @@ const router = createRouter({
       name: 'gestionTiposPreguntas',
       component: () => import('@/views/GestionTipoPreguntasView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/TipoDocumentos',
+      name: 'gestionTiposDocumentos',
+      component: () => import('@/views/GestionTipoDocumentosView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
     }
   ]
 });

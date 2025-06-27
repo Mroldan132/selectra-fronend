@@ -77,6 +77,12 @@ const router = createRouter({
        component: () => import('@/views/GestionNivelAcademicosView.vue'),
        meta: { requiresAuth: true, roles: ['Administrador'] }
       },
+      {
+      path: '/TipoDocumentos',
+      name: 'gestionTiposDocumentos',
+      component: () => import('@/views/GestionTipoDocumentosView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    }
   ]
 });
 

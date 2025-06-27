@@ -380,7 +380,8 @@ const menuSections = computed(() => {
       { title: 'Requerimientos Aprobados', icon: 'mdi-account-multiple-outline', to: { name: 'gestionRequerimientosAdm' } },
       { title: 'Personal', icon: 'mdi-account-group-outline', to: { name: 'gestionPersonal' } },
       { title: 'Gestión Oferta Laboral', icon: 'mdi-briefcase-outline', to: { name: 'ofertasLaboralesAdm' } },
-      { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } }
+     { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } },
+ { title: 'Gestión de áreas', icon: 'mdi-domain-outline', to: { name: 'gestionAreas' } }
     );
   }
   if (userRole === 'Aspirante') {

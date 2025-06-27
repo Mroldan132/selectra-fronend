@@ -64,6 +64,12 @@ const router = createRouter({
       name: 'gestionTiposPreguntas',
       component: () => import('@/views/GestionTipoPreguntasView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/areas',
+      name: 'gestionAreas',
+      component: () => import('@/views/GestionAreasView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
     }
   ]
 });

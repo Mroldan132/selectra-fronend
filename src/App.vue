@@ -372,7 +372,10 @@ const menuSections = computed(() => {
   ];
   if (userRole === 'Solicitante' || userRole === 'JefeAprobador') {
     sections.find(s => s.title === 'GESTIÓN').items.push(
-      { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } }
+        { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } },
+        { title: 'Solicitudes Pendientes', icon: 'mdi-calendar-clock', to: { name: 'SolicitudesPendientesAprobacion' } },
+
+       
     );
   }
   if (userRole === 'Administrador') {
@@ -382,7 +385,7 @@ const menuSections = computed(() => {
       { title: 'Gestión Oferta Laboral', icon: 'mdi-briefcase-outline', to: { name: 'ofertasLaboralesAdm' } },
      { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } },
       { title: 'Gestión de áreas', icon: 'mdi-domain-outline', to: { name: 'gestionAreas' } },
-      { title: 'Gestión Nivel Academicos', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionNivelAcademicos' } }
+      { title: 'Gestión Nivel Academicos', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionNivelAcademicos' } },
       { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } },
       { title: 'Gestión tipos documentos', icon: 'mdi-file-document-outline', to: { name: 'gestionTiposDocumentos' } }
     );

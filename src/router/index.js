@@ -6,6 +6,8 @@ import GestionRequerimientosView from '../views/GestionRequerimientosView.vue';
 import RegistroAspirantePage from '../views/RegistroAspirante.vue'; 
 import GestionRequerimientosAdmView from '../views/GestionRequerimientosAdmView.vue';
 import { useAuthStore } from '@/stores/authStore';
+import GestionSolicitudesPendientesView from '@/views/GestionSolicitudesPendientesView.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,8 +33,15 @@ const router = createRouter({
       path: '/requerimientos',
       name: 'gestionRequerimientos',
       component: GestionRequerimientosView,
-      meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] }
-    },
+      meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] },
+      },
+      {
+          path: '/solicitudes/pendientes-aprobacion',
+          name: 'SolicitudesPendientesAprobacion',
+          component: GestionSolicitudesPendientesView,
+          meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] },
+      },
+      
     {
       path: '/requerimientosAdm',
       name: 'gestionRequerimientosAdm',

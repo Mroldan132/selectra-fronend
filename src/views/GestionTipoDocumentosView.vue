@@ -49,6 +49,14 @@
       @cerrar="cerrarModal"
       @guardado="handleGuardado"
     />
+
+    <!-- <AprobarSolicitudVacacionesModal
+      :visible="dialogVisible"
+      :tipo-documento-para-editar="tipoDocumentoSeleccionado"
+      :modo-editar="modoEditar"
+      @cerrar="cerrarModal"
+      @guardado="handleGuardado"
+    /> -->
     
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="4000" location="top right" variant="elevated">
       {{ snackbar.text }}
@@ -61,6 +69,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import AprobarSolicitudVacacionesModal from '@/components/SolicitudVacaciones/AprobarSolicitudVacacionesModal.vue';
 import TipoDocumentoModal from '@/components/TipoDocumentos/TipoDocumentoModal.vue'; 
 import TipoDocumentoService from '@/services/TipoDocumentoService'; 
 

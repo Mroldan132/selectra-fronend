@@ -32,6 +32,17 @@ class OfertasLaboralesService {
         }
 
     }
+    
+    async actualizarOfertaLaboral(ofertaLaboral) {
+        try {
+            const response = await apiClient.put('/OfertasLaborales/actualizarOfertaLaboral', ofertaLaboral);
+            return response.data;
+        } catch (error) {
+            console.error("Error al generar la oferta laboral:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al crear oferta laboral");
+        }
+
+    }
 
     async getOfertasLaborales() {
         try {
@@ -50,6 +61,25 @@ class OfertasLaboralesService {
             console.error("Error al crear oferta laboral:", error.response || error);
             throw new Error(error.response?.data?.message || "Error al crear oferta laboral");
         }   
+    }
+
+    async pasarOfertaSiguienteEstado(ofertaId) {
+        try {
+            const response = await apiClient.put(`/OfertasLaborales/pasarSiguienteEstadoOferta/${ofertaId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al pasar oferta laboral a siguiente etapa:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al pasar oferta laboral a siguiente etapa");
+        }
+    }
+    async listaOfertasPublicadas() {
+        try {
+            const response = await apiClient.get('/OfertasLaborales/listaOfertasPublicadas');
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener lista de ofertas laborales públicas:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar lista de ofertas laborales públicas");
+        }
     }
 }
 export default new OfertasLaboralesService();

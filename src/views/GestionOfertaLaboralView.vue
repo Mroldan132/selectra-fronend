@@ -78,15 +78,15 @@
               </v-tooltip>
               <v-tooltip location="top">
                 <template #activator="{ props }">
-                   <v-btn 
-                    :icon="item.estado === 'Activa' ? 'mdi-pause-circle-outline' : 'mdi-play-circle-outline'" 
-                    variant="text" 
-                    :color="item.estado === 'Activa' ? 'warning' : 'success'" 
-                    v-bind="props" 
+                  <v-btn
+                    icon="mdi-arrow-right"
+                    variant="text"
+                    color="primary"
+                    v-bind="props"
                     @click.stop="toggleEstadoOferta(item)"
                   ></v-btn>
                 </template>
-                <span>{{ item.estado === 'Activa' ? 'Pausar' : 'Activar' }}</span>
+                <span>Siguiente estado</span>
               </v-tooltip>
                <v-tooltip location="top">
                 <template #activator="{ props }">
@@ -251,13 +251,22 @@ const abrirNuevaOferta = () => {
 };
 
 const toggleEstadoOferta = async (oferta) => {
-  const nuevoEstado = oferta.estado === 'Activa' ? 'Pausada' : 'Activa';
-  // Lógica para llamar al servicio de cambio de estado
-  // await OfertasLaboralesService.cambiarEstado(oferta.ofertaLaboralId, nuevoEstado);
-  showSnackbar(`La oferta "${oferta.titulo}" ahora está ${nuevoEstado}.`, 'info');
-  // Para simulación, actualizamos localmente:
-  const index = ofertas.value.findIndex(o => o.ofertaLaboralId === oferta.ofertaLaboralId);
-  if(index > -1) ofertas.value[index].estado = nuevoEstado;
+  console.log(oferta.ofertaLaboralId)
+
+  if (!oferta || !oferta.ofertaLaboralId) {
+    showSnackbar('Oferta no válida.', 'error');
+    return;
+  }
+
+  OfertasLaboralesService.pasarOfertaSiguienteEstado(oferta.ofertaLaboralId)
+    .then(() => {
+      showSnackbar(`La oferta "${oferta.titulo}" ha sido actualizada.`);
+      cargarOfertas();
+    })
+    .catch(error => {
+      console.error('Error al cambiar el estado de la oferta:', error);
+      showSnackbar('Error al cambiar el estado de la oferta.', 'error');
+    });
 };
 
 const abrirDialogoEliminar = (item) => {

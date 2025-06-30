@@ -281,7 +281,11 @@ const guardarOfertaLaboral = async () => {
         payload.fechaEstimadaIngreso = payload.fechaEstimadaIngreso.toISOString().slice(0, 10);
     }
     
-    await OfertasLaboralesService.generarOfertaLaboral(payload)
+    if(form.value.ofertaId){
+      await OfertasLaboralesService.actualizarOfertaLaboral(payload)
+    }else{
+      await OfertasLaboralesService.generarOfertaLaboral(payload)
+    }
     const message = form.value.ofertaId ? 'Oferta laboral actualizada correctamente.' : 'Oferta laboral creada y enviada satisfactoriamente.'
     emit('saved', message)
     cerrar()

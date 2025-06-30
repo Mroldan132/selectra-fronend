@@ -58,6 +58,30 @@ const router = createRouter({
       name: 'portalOfertas',
       component: () => import('@/views/PortalDeOfertas.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/TipoPreguntas',
+      name: 'gestionTiposPreguntas',
+      component: () => import('@/views/GestionTipoPreguntasView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/areas',
+      name: 'gestionAreas',
+      component: () => import('@/views/GestionAreasView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
+    {
+       path: '/NivelAcademicos',
+       name: 'gestionNivelAcademicos',
+       component: () => import('@/views/GestionNivelAcademicosView.vue'),
+       meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
+      {
+      path: '/TipoDocumentos',
+      name: 'gestionTiposDocumentos',
+      component: () => import('@/views/GestionTipoDocumentosView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
     }
   ]
 });

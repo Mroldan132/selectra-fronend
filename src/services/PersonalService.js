@@ -38,6 +38,15 @@ class PersonalService{
             throw new Error(error.response?.data?.message || "Error al actualizar datos del personal");
         }
     }
+    async organigrama() {
+        try {
+            const response = await apiClient.get('/Personales/organigrama');
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener organigrama:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar organigrama");
+        }
+    }
 }
 
 export default new PersonalService();

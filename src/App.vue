@@ -224,7 +224,6 @@
     </v-main>
   </v-app>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -240,13 +239,11 @@ const drawer = ref(true);
 
 // Lógica centralizada para controlar la visibilidad de la navegación
 const mostrarNavegacionPrincipal = computed(() => {
-  // Lista de rutas públicas que NO deben mostrar la navegación principal
   const rutasSinLayout = ['login', 'registro-aspirante'];
-
-  // La navegación se muestra solo si el usuario está logueado Y la ruta actual NO está en la lista de exclusión.
   return authStore.isLoggedIn && !rutasSinLayout.includes(route.name);
 });
 
+// --- Lógica de Notificaciones y Autenticación (sin cambios) ---
 const handleLogout = () => {
   authStore.logout();
   notificationStore.clearNotifications();
@@ -276,6 +273,7 @@ const handleNotificationClick = (notification) => {
   }
 };
 
+// ... (El resto de tus funciones de notificaciones: getNotificationIcon, formatNotificationTime, etc. van aquí sin cambios) ...
 const getNotificationIcon = (type) => {
   switch (type) {
     case 'NuevoRequerimiento':
@@ -293,19 +291,13 @@ const getNotificationIcon = (type) => {
 };
 
 const getNotificationAvatarColor = (type, isRead) => {
-  if (type === 'RequerimientoAprobado') {
-    return 'success';
-  }
-  if (type === 'RequerimientoRechazado') {
-    return 'error';
-  }
+  if (type === 'RequerimientoAprobado') return 'success';
+  if (type === 'RequerimientoRechazado') return 'error';
   return isRead ? 'grey-lighten-2' : 'primary';
 };
 
 const getNotificationIconColorInAvatar = (type, isRead) => {
-  if (type === 'RequerimientoAprobado' || type === 'RequerimientoRechazado') {
-    return 'white';
-  }
+  if (type === 'RequerimientoAprobado' || type === 'RequerimientoRechazado') return 'white';
   return isRead ? 'grey-darken-1' : 'white';
 };
 
@@ -341,6 +333,7 @@ const navigateToNotificationsPage = () => {
   console.log("Navegar a la página de todas las notificaciones (implementar ruta y componente)");
 };
 
+// --- Hooks del ciclo de vida (sin cambios) ---
 onMounted(() => {
   if (authStore.isLoggedIn) {
     fetchUserNotifications();
@@ -355,51 +348,147 @@ watch(() => authStore.isLoggedIn, (newIsLoggedIn) => {
   }
 });
 
+// --- ESTRUCTURA DE MENÚ MEJORADA ---
+
+// 1. Define toda la estructura del menú en un solo lugar.
+//    Cada item tiene una propiedad `roles` que indica quién puede verlo.
+const menuConfig = [
+  {
+    title: 'DASHBOARD',
+    divider: true,
+    items: [
+      {
+        title: 'Inicio',
+        icon: 'mdi-home-variant-outline',
+        to: { name: 'home' },
+        roles: ['Solicitante', 'JefeAprobador', 'Administrador', 'Aspirante']
+      }
+    ]
+  },
+  {
+    title: 'MI GESTIÓN',
+    divider: true,
+    items: [
+      {
+        title: 'Mis Requerimientos',
+        icon: 'mdi-file-document-multiple-outline',
+        to: { name: 'gestionRequerimientos' },
+        roles: ['Solicitante', 'JefeAprobador']
+      },
+      {
+        title: 'Mis Solicitudes de Vacaciones',
+        icon: 'mdi-calendar-check-outline',
+        to: { name: 'gestionSolicitudVacaciones' },
+        roles: ['Solicitante', 'JefeAprobador']
+      }
+    ]
+  },
+  {
+    title: 'GESTIÓN DE PERSONAL',
+    divider: true,
+    roles: ['Administrador'], // Rol a nivel de sección para simplificar
+    items: [
+      {
+        title: 'Personal',
+        icon: 'mdi-account-group-outline',
+        to: { name: 'gestionPersonal' },
+        roles: ['Administrador']
+      },
+      {
+        title: 'Organigrama',
+        icon: 'mdi-sitemap',
+        to: { name: 'gestionArbolPuestos' },
+        roles: ['Administrador']
+      },
+    ]
+  },
+  {
+    title: 'PROCESO DE SELECCIÓN',
+    divider: true,
+    roles: ['Administrador'],
+    items: [
+      {
+        title: 'Requerimientos Aprobados',
+        icon: 'mdi-file-check-outline',
+        to: { name: 'gestionRequerimientosAdm' },
+        roles: ['Administrador']
+      },
+      {
+        title: 'Ofertas Laborales',
+        icon: 'mdi-briefcase-outline',
+        to: { name: 'ofertasLaboralesAdm' },
+        roles: ['Administrador']
+      },
+    ]
+  },
+  {
+    title: 'CONFIGURACIÓN',
+    divider: true,
+    roles: ['Administrador'],
+    items: [
+      {
+        title: 'Cargos',
+        icon: 'mdi-account-tie-outline',
+        to: { name: 'gestionCargos' },
+        roles: ['Administrador']
+      },
+      {
+        title: 'Áreas',
+        icon: 'mdi-domain',
+        to: { name: 'gestionAreas' },
+        roles: ['Administrador']
+      },
+      {
+        title: 'Niveles Académicos',
+        icon: 'mdi-school-outline',
+        to: { name: 'gestionNivelAcademicos' },
+        roles: ['Administrador']
+      },
+      {
+        title: 'Tipos de Documentos',
+        icon: 'mdi-file-document-outline',
+        to: { name: 'gestionTiposDocumentos' },
+        roles: ['Administrador']
+      },
+    ]
+  },
+  {
+    title: 'PORTAL DEL ASPIRANTE',
+    divider: false,
+    roles: ['Aspirante'],
+    items: [
+      {
+        title: 'Ver Ofertas',
+        icon: 'mdi-briefcase-search-outline',
+        to: { name: 'portalOfertas' },
+        roles: ['Aspirante']
+      },
+      {
+        title: 'Mis Postulaciones',
+        icon: 'mdi-file-account-outline',
+        to: { name: 'gestionMisOfertas' },
+        roles: ['Aspirante']
+      }
+    ]
+  }
+];
+
 const menuSections = computed(() => {
   const userRole = authStore.getUserRole;
   if (!userRole) return [];
-  let sections = [
-    {
-      title: 'DASHBOARD',
-      items: [{ title: 'Inicio', icon: 'mdi-home-variant-outline', to: { name: 'home' } }],
-      divider: true
-    },
-    {
-      title: 'GESTIÓN',
-      items: [],
-      divider: true
-    },
-  ];
-  if (userRole === 'Solicitante' || userRole === 'JefeAprobador') {
-    sections.find(s => s.title === 'GESTIÓN').items.push(
-      { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } },
-      { title: 'Solicitudes Vacaciones', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionSolicitudVacaciones' } }
-    );
-  }
-  if (userRole === 'Administrador') {
-    sections.find(s => s.title === 'GESTIÓN').items.push(
-      { title: 'Requerimientos Aprobados', icon: 'mdi-account-multiple-outline', to: { name: 'gestionRequerimientosAdm' } },
-      { title: 'Personal', icon: 'mdi-account-group-outline', to: { name: 'gestionPersonal' } },
-      { title: 'Gestión Oferta Laboral', icon: 'mdi-briefcase-outline', to: { name: 'ofertasLaboralesAdm' } },
-      { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } },
-      { title: 'Gestión de áreas', icon: 'mdi-domain-outline', to: { name: 'gestionAreas' } },
-      { title: 'Gestión Nivel Academicos', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionNivelAcademicos' } },
-      { title: 'Gestión tipos preguntas', icon: 'mdi-format-list-bulleted-type', to: { name: 'gestionTiposPreguntas' } },
-      { title: 'Gestión tipos documentos', icon: 'mdi-file-document-outline', to: { name: 'gestionTiposDocumentos' } }
-    );
-  }
-  if (userRole === 'Aspirante') {
-    sections.push({
-      title: 'PORTAL',
-      items: [
-        { title: 'Portal de Ofertas', icon: 'mdi-briefcase-search-outline', to: { name: 'portalOfertas' } }
-      ]
-    });
-  }  
-  return sections.filter(section => section.items.length > 0 || !section.title);
-});
-</script>
 
+  return menuConfig
+    .map(section => {
+      const filteredItems = section.items.filter(item =>
+        item.roles.includes(userRole)
+      );
+
+      return { ...section, items: filteredItems };
+    })
+    .filter(section => section.items.length > 0);
+});
+
+</script>
 <style>
 html, body, #app, .v-application {
   height: 100%;

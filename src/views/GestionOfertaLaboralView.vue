@@ -76,18 +76,19 @@
                 </template>
                 <span>Editar</span>
               </v-tooltip>
-              <v-tooltip location="top">
+                <v-tooltip location="top">
                 <template #activator="{ props }">
                   <v-btn
-                    icon="mdi-arrow-right"
-                    variant="text"
-                    color="primary"
-                    v-bind="props"
-                    @click.stop="toggleEstadoOferta(item)"
+                  icon="mdi-arrow-right"
+                  variant="text"
+                  color="primary"
+                  v-bind="props"
+                  @click.stop="toggleEstadoOferta(item)"
+                  :disabled="item.countPostulantes === 0 && item.estadoOferta !== 'Pendiente'"
                   ></v-btn>
                 </template>
                 <span>Siguiente estado</span>
-              </v-tooltip>
+                </v-tooltip>
                <v-tooltip location="top">
                 <template #activator="{ props }">
                    <v-btn icon="mdi-delete-outline" variant="text" color="error" v-bind="props" @click.stop="abrirDialogoEliminar(item)"></v-btn>
@@ -103,17 +104,13 @@
                 <v-card flat color="grey-lighten-5" class="ma-3 rounded-lg">
                    <v-card-text>
                       <v-row>
-                          <v-col cols="12" md="7">
+                           <v-col cols="6">
                               <div class="text-caption text-grey">Descripción</div>
-                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.descripcion || 'No especificada.' }}</p>
+                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.descripcion || 'No especificados.' }}</p>
                           </v-col>
-                          <v-col cols="12" md="5">
-                              <div class="text-caption text-grey">Funciones Principales</div>
-                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.funciones || 'No especificadas.' }}</p>
-                          </v-col>
-                           <v-col cols="12">
-                              <div class="text-caption text-grey">Beneficios</div>
-                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.beneficios || 'No especificados.' }}</p>
+                          <v-col cols="6">
+                              <div class="text-caption text-grey">N° de personas postuladas</div>
+                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.countPostulantes || 'No existe postulantes.' }}</p>
                           </v-col>
                       </v-row>
                    </v-card-text>

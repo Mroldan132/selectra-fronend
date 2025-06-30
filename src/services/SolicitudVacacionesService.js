@@ -16,18 +16,9 @@ class SolicitudVacacionesService {
         }
     }
 
-    async getMisSolicitudes(usuario) {
+    async getMisSolicitudes() {
         try {
-            const response = await apiClient.get(`/SolicitudVacaciones/
-            mis-solicitudes/${usuario}`);
-
-            // mocks
-            /* const response = {
-                data: [
-                    { id: 1, estado: 'aprobado', fechaInicio: '2023-10-02', fechaFin: '2023-11-02', diasSolicitados: 2, fechaCreacion: '2023-10-01', personalId: usuario, comentariosEmpleado: 'por favor', comentariosAprobador: 'todo bien' },
-                    { id: 2, estado: 'aprobado', fechaCreacion: '2023-10-02', personalId: usuario }
-                ]
-            }; */
+            const response = await apiClient.get(`/SolicitudVacaciones/mis-solicitudes`);
             return response.data;
         } catch (error) {
             console.error("Error al obtener solicitudes:", error.response || error);

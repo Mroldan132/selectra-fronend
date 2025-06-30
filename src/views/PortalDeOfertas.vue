@@ -169,11 +169,9 @@ const ofertasFiltradas = computed(() => {
 const cargarOfertas = async () => {
   loading.value = true;
   try {
-    // Simula una llamada a la API. Reemplaza esto con tu servicio real.
     const respuesta = await OfertasLaboralesService.listaOfertasPublicadas();
     ofertasDisponibles.value = respuesta;
     
-    // Si hay ofertas, selecciona la primera por defecto
     if (ofertasDisponibles.value.length > 0) {
       ofertaSeleccionada.value = ofertasDisponibles.value[0]; 
     }

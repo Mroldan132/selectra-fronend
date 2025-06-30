@@ -35,6 +35,7 @@
         ></v-text-field>
 
         <v-data-table
+          v-model:expanded="expanded"
           :headers="headers"
           :items="listaSolicitudes"
           :search="search"
@@ -90,7 +91,26 @@
               </v-tooltip>
             </div>
           </template>
-
+          <template #expanded-row="{ columns, item }">
+            <tr>
+              <td :colspan="columns.length" class="pa-0">
+                <v-card flat color="grey-lighten-5" class="ma-3 rounded-lg">
+                   <v-card-text>
+                      <v-row>
+                           <v-col cols="12">
+                              <div class="text-caption text-grey">Detalle de mi solicitud</div>
+                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.comentariosEmpleado || 'No especificados.' }}</p>
+                          </v-col>
+                           <v-col cols="12">
+                              <div class="text-caption text-grey">Comentario de mi jefe</div>
+                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.comentariosAprobador || 'No especificados.' }}</p>
+                          </v-col>
+                      </v-row>
+                   </v-card-text>
+                </v-card>
+              </td>
+            </tr>
+          </template>
           <template v-slot:loading>
             <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
           </template>
@@ -190,7 +210,7 @@ const cargarSolicitudes = async () => {
   errorTabla.value = '';
   try {
     if (authStore.isLoggedIn) {
-      const data = await SolicitudVacacionesService.getMisSolicitudes(authStore.currentUser.usuario);
+      const data = await SolicitudVacacionesService.getMisSolicitudes();
       listaSolicitudes.value = data;
       await nextTick();
       verificarAccionDesdeQuery();

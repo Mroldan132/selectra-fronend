@@ -90,6 +90,23 @@ const router = createRouter({
       component: GestionSolicitudVacacionesView,
       meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] }
     },
+    {
+      path: '/Cargos',
+      name: 'gestionCargos',
+      component: () => import('@/views/GestionCargosView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
+    {
+      path: '/mis-postulaciones',
+      name: 'gestionMisOfertas',
+      component: () => import('@/views/GestionMisOfertas.vue'),
+    },
+    {
+      path: '/organigrama',
+      name: 'gestionArbolPuestos',
+      component: () => import('@/views/ArbolPuestosView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    }   
   ]
 });
 

@@ -372,7 +372,8 @@ const menuSections = computed(() => {
   ];
   if (userRole === 'Solicitante' || userRole === 'JefeAprobador') {
     sections.find(s => s.title === 'GESTIÓN').items.push(
-      { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } }
+      { title: 'Requerimientos', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionRequerimientos' } },
+      { title: 'Solicitudes Vacaciones', icon: 'mdi-file-document-multiple-outline', to: { name: 'gestionSolicitudVacaciones' } }
     );
   }
   if (userRole === 'Administrador') {

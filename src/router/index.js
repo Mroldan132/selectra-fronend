@@ -5,6 +5,7 @@ import HomeView from '../views/HomeView.vue';
 import GestionRequerimientosView from '../views/GestionRequerimientosView.vue';
 import RegistroAspirantePage from '../views/RegistroAspirante.vue'; 
 import GestionRequerimientosAdmView from '../views/GestionRequerimientosAdmView.vue';
+import GestionSolicitudVacacionesView from '../views/GestionSolicitudVacacionesView.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
@@ -82,7 +83,13 @@ const router = createRouter({
       name: 'gestionTiposDocumentos',
       component: () => import('@/views/GestionTipoDocumentosView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
-    }
+    },
+    {
+      path: '/SolicitudVacaciones',
+      name: 'gestionSolicitudVacaciones',
+      component: GestionSolicitudVacacionesView,
+      meta: { requiresAuth: true, roles: ['Solicitante', 'JefeAprobador', 'RRHH', 'Administrador'] }
+    },
   ]
 });
 

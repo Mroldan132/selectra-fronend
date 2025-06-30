@@ -49,7 +49,7 @@
                 <v-col cols="12" sm="4"><v-text-field v-model="formData.apellidoPaterno" label="Apellido Paterno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
                 <v-col cols="12" sm="4"><v-text-field v-model="formData.apellidoMaterno" label="Apellido Materno" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
                 <v-col cols="12" sm="4">
-                    <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" label="Tipo Documento" item-title="nombre" item-value="id" :rules="[rules.required]" variant="outlined" density="compact" />
+                    <v-select v-model="formData.tipoDocumentoId" :items="tiposDocumento" label="Tipo Documento" item-title="nombreTipoDocumento" item-value="tipoDocumentoId" :rules="[rules.required]" variant="outlined" density="compact" />
                 </v-col>
                 <v-col cols="12" sm="4"><v-text-field v-model="formData.numeroDocumento" label="N° Documento" :rules="[rules.required]" variant="outlined" density="compact" /></v-col>
                 <v-col cols="12" sm="4">

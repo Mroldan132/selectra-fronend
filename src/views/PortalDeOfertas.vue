@@ -198,6 +198,7 @@ const postularme = async (oferta) => {
     snackbarText.value = 'Postulado correctamente';
     snackbarColor.value = 'success';
     snackbar.value = true;
+    cargarOfertas(); // Recargar ofertas después de postular
   } catch (error) {
     console.error("Error al postular:", error);
     snackbarText.value = 'Error al postularse. Intente nuevamente.';

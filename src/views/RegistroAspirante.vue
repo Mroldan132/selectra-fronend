@@ -87,7 +87,7 @@
                        </v-menu>
                      </v-col>
                       <v-col cols="12" md="6">
-                        <v-select v-model="formData.nivelAcademicoId" :items="nivelesAcademicos" item-value="id" item-title="nombre" label="Nivel Académico" :rules="[rules.required]" variant="outlined" density="compact" />
+                        <v-select v-model="formData.nivelAcademicoId" :items="nivelesAcademicos" item-value="nivelAcademicoId" item-title="nombre" label="Nivel Académico" :rules="[rules.required]" variant="outlined" density="compact" />
                       </v-col>
                    </v-row>
                 </v-card-text>
@@ -257,7 +257,7 @@ const handleRegister = async () => {
     if (payload.fechaNacimiento instanceof Date) {
         payload.fechaNacimiento = payload.fechaNacimiento.toISOString().slice(0, 10);
     }
-
+console.log(payload)
     await AspiranteService.registrarAspirante(payload);
     success.value = true;
     step.value = 4;
@@ -272,7 +272,7 @@ const handleRegister = async () => {
 
 onMounted(async () => {
   try {
-    nivelesAcademicos.value = await NivelAcademicoService.obtenerNivelesAcademicos();
+    nivelesAcademicos.value = await NivelAcademicoService.obtenerNivelAcademicos();
     tiposDocumento.value = await DatosPersonalesService.getTiposDocumento();
   } catch (error) {
     console.error("Error al cargar datos iniciales:", error);

@@ -9,6 +9,19 @@
         </v-toolbar>
 
         <v-card-text class="pa-5">
+          <!-- Alerta para mostrar errores de la API -->
+          <v-alert
+            v-if="error"
+            type="error"
+            variant="tonal"
+            class="mb-4"
+            border="start"
+            closable
+            @click:close="error = ''"
+          >
+            {{ error }}
+          </v-alert>
+
           <v-row>
             <v-col cols="12" md="6">
               <v-text-field
@@ -17,7 +30,8 @@
                 type="date"
                 variant="outlined"
                 density="comfortable"
-                :rules="[reglas.requerido]"
+                :min="today"
+                :rules="[reglas.requerido, reglas.noFechasPasadas]"
                 :readonly="esSoloLectura"
               ></v-text-field>
             </v-col>
@@ -28,7 +42,8 @@
                 type="date"
                 variant="outlined"
                 density="comfortable"
-                :rules="[reglas.requerido, reglas.fechaFinValida]"
+                :min="today"
+                :rules="[reglas.requerido, reglas.noFechasPasadas, reglas.fechaFinValida]"
                 :readonly="esSoloLectura"
               ></v-text-field>
             </v-col>
@@ -80,46 +95,50 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+// 1. Importa tu servicio
+import SolicitudVacacionesService from '@/services/SolicitudVacacionesService';
 
 const props = defineProps({
   modelValue: Boolean,
-  solicitud: Object, // Puede ser null (para crear) o un objeto (para ver/editar)
-  mode: {         // El nuevo prop "inteligente"
+  solicitud: Object,
+  mode: {
     type: String,
-    default: 'view', // 'view', 'create', 'edit'
+    default: 'view',
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'save']);
+// Se cambia el evento a 'save-success' para mayor claridad
+const emit = defineEmits(['update:modelValue', 'save-success']);
 
 const form = ref(null);
 const guardando = ref(false);
-
-// Usamos un objeto local para los datos del formulario para poder editar
 const formData = ref({});
+const error = ref(''); // Variable para mensajes de error
 
-// Computada para saber si los campos son de solo lectura
 const esSoloLectura = computed(() => props.mode === 'view');
 
-// Computada para el título dinámico
 const tituloDelModal = computed(() => {
   if (props.mode === 'create') return 'Crear Nueva Solicitud';
   if (props.mode === 'edit') return 'Editar Solicitud';
   return 'Detalle de Solicitud';
 });
 
-// Watcher que se activa cuando el modal se abre o cambia la solicitud
+const today = computed(() => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().split('T')[0];
+});
+
 watch(() => props.modelValue, (newVal) => {
   if (newVal) {
+    error.value = ''; // Limpia errores al abrir el modal
     if (props.mode === 'create' || !props.solicitud) {
-      // Si es para crear, reseteamos el formulario
       formData.value = {
         fechaInicio: '',
         fechaFin: '',
         comentariosEmpleado: '',
       };
     } else {
-      // Si es para ver/editar, copiamos los datos de la prop
       formData.value = { ...props.solicitud };
     }
   }
@@ -127,6 +146,10 @@ watch(() => props.modelValue, (newVal) => {
 
 const reglas = {
   requerido: v => !!v || 'Este campo es requerido.',
+  noFechasPasadas: v => {
+    if (!v) return true;
+    return new Date(v) >= new Date(today.value) || 'No se pueden seleccionar fechas pasadas.';
+  },
   fechaFinValida: v => {
     if (!formData.value.fechaInicio || !v) return true;
     return new Date(v) >= new Date(formData.value.fechaInicio) || 'La fecha de fin no puede ser anterior a la de inicio.';
@@ -137,16 +160,45 @@ const cerrar = () => {
   emit('update:modelValue', false);
 };
 
+// 2. Lógica de guardado implementada
 const guardar = async () => {
-  if (esSoloLectura.value) return; // No hacer nada si es solo lectura
+  if (esSoloLectura.value) return;
 
   const { valid } = await form.value.validate();
   if (!valid) return;
 
   guardando.value = true;
-  // Emitimos el evento con los datos del formulario para que el padre decida si crea o actualiza
-  emit('save', formData.value);
-  guardando.value = false;
-  cerrar();
+  error.value = ''; // Resetea el error antes de intentar
+
+  try {
+    // --- INICIO DEL CAMBIO ---
+    // Mapea los datos del formulario al formato esperado por el DTO del backend
+    const payload = {
+      FechaInicio: formData.value.fechaInicio,
+      FechaFin: formData.value.fechaFin,
+      ComentariosEmpleado: formData.value.comentariosEmpleado || '', // Asegura que no sea null
+    };
+    // --- FIN DEL CAMBIO ---
+
+    if (props.mode === 'create') {
+      await SolicitudVacacionesService.crearSolicitud(payload); // Envía el payload formateado
+    } else {
+      // Asumiendo que tienes un método para actualizar en tu servicio
+      // const updatePayload = { ...payload, Id: formData.value.id }; // Añadir el ID para actualizar
+      // await SolicitudVacacionesService.actualizarSolicitud(updatePayload);
+      console.warn('Método de actualización no implementado en el ejemplo.');
+    }
+    
+    // 3. Emite un evento de éxito para que el padre refresque la lista
+    emit('save-success');
+    cerrar();
+
+  } catch (err) {
+    // Captura y muestra el error de la API
+    error.value = err.message || 'Ocurrió un error inesperado.';
+    console.error("Error al guardar la solicitud:", err);
+  } finally {
+    guardando.value = false;
+  }
 };
 </script>

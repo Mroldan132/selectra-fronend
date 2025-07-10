@@ -4,7 +4,7 @@
       <v-toolbar flat color="white">
         <v-toolbar-title class="font-weight-bold text-grey-darken-2"> 
           <v-icon class="mr-3">mdi-school</v-icon>
-          Gesti�n de Niveles Acad�micos
+          Gestión de Niveles Académicos
         </v-toolbar-title>
           <v-divider class="mx-2" vertical></v-divider>
         <v-spacer></v-spacer>
@@ -47,7 +47,7 @@
         :nivelAcademicoParaEditar="nivelSeleccionado"
         :modo-editar="modoEditar"
         @cerrar="cerrarModal"
-       @nivel-guardado="handleGuardado"
+       @guardado="handleGuardado"
      />
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="4000" location="top right" variant="elevated">
       {{ snackbar.text }}
@@ -117,7 +117,6 @@
       nivelSeleccionado.value = null;
     };
     const handleGuardado = () => {
-      debugger
       cerrarModal();
      const message = modoEditar.value ? 'Nivel acad�mico actualizado correctamente.' : 'Nivel acad�mico creado correctamente.';
       showSnackbar(message);

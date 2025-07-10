@@ -57,7 +57,12 @@
                       <template v-slot:activator="{ props }">
                         <v-text-field v-model="formattedFechaNacimiento" label="Fecha Nacimiento" prepend-inner-icon="mdi-calendar" variant="outlined" readonly v-bind="props" density="compact"/>
                       </template>
-                      <v-date-picker v-model="formData.fechaNacimiento" @update:model-value="dateMenuNacimiento = false" hide-header />
+                      <v-date-picker
+                        v-model="formData.fechaNacimiento"
+                        @update:model-value="dateMenuNacimiento = false"
+                        hide-header
+                        :max="maxBirthDate"
+                      />
                     </v-menu>
                 </v-col>
               </v-row>
@@ -157,6 +162,14 @@ const formatDate = (date) => date ? new Date(date).toLocaleDateString('es-ES') :
 const formattedFechaNacimiento = computed(() => formatDate(formData.fechaNacimiento));
 const formattedFechaIngreso = computed(() => formatDate(formData.fechaIngresoCompania));
 
+const maxBirthDate = computed(() => {
+  const today = new Date();
+  const year = today.getFullYear() - 18;
+  const month = today.getMonth();
+  const day = today.getDate();
+  // Retorna la fecha de hace 18 años en formato YYYY-MM-DD
+  return new Date(year, month, day).toISOString().slice(0, 10);
+});
 
 // --- Watchers ---
 watch(() => props.modelValue, (val) => {

@@ -15,6 +15,8 @@
 
         <HomePersonal v-if="userRole === 'Solicitante' || userRole === 'JefeAprobador'" />
 
+        <HomeAspirante v-else-if="userRole === 'Aspirante'" />
+
         <template v-else-if="userRole === 'Administrador'">
           <v-card class="elevation-2 pa-8 text-center" rounded="xl">
             <v-icon size="48" color="primary" class="mb-4">mdi-shield-account</v-icon>
@@ -42,6 +44,7 @@
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import HomePersonal from '@/components/home/HomePersonal.vue';
+import HomeAspirante from '@/components/home/HomeAspirante.vue';
 
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.currentUser?.rol);

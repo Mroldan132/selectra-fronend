@@ -3,7 +3,7 @@ import apiClient from './axiosInstance';
 class SolicitudVacacionesService {
     async crearSolicitud(solicitudData) {
         try {
-            const response = await apiClient.post(`/SolicitudVacaciones/${solicitudData.personalId}`, solicitudData);
+            const response = await apiClient.post(`/SolicitudVacaciones/crearSolicitud`, solicitudData);
             return response.data;
         } catch (error) {
             const errorMessage =

@@ -11,6 +11,16 @@ class PostulantesService {
         }
     }
 
+    async misPostulaciones() {
+        try {
+            const response = await apiClient.get('/Postulantes/misPostulaciones');
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener mis postulaciones:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al obtener mis postulaciones");
+        }
+    }
+
 }
 
 export default new PostulantesService();

@@ -59,7 +59,7 @@
                     </v-chip>
                   </div>
                   <div class="text-caption text-medium-emphasis">
-                    Postulaste el: {{ postulacion.fechaPostulacion }}
+                    Postulaste el: {{ postulacion.fecha }}
                   </div>
                 </v-card-text>
 
@@ -67,22 +67,18 @@
 
                 <v-divider></v-divider>
                 <v-card-actions>
-                  <v-btn @click="verOferta(postulacion.oferta)" variant="text">
-                    Ver Oferta Original
-                  </v-btn>
+                    <v-btn
+                    v-if="postulacion.estado === 'Seleccion'"
+                    @click="verOferta(postulacion.oferta)"
+                    variant="text"
+                    >
+                    Responder Preguntas
+                    </v-btn>
                   <v-spacer></v-spacer>
                   <v-menu location="top end">
                     <template v-slot:activator="{ props }">
                       <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
                     </template>
-                    <!-- <v-list dense>
-                      <v-list-item @click="retirarPostulacion(postulacion.id)" class="text-error">
-                        <template v-slot:prepend>
-                          <v-icon>mdi-delete-outline</v-icon>
-                        </template>
-                        <v-list-item-title>Retirar Postulación</v-list-item-title>
-                      </v-list-item>
-                    </v-list> -->
                   </v-menu>
                 </v-card-actions>
               </v-card>
@@ -117,42 +113,33 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-// Asume que tienes un servicio para manejar las postulaciones del usuario
-// import PostulacionesService from '@/services/PostulacionesService';
+ import PostulacionesService from '@/services/PostulantesService';
 
-// --- ROUTER ---
 const router = useRouter();
 
-// --- STATE ---
 const postulaciones = ref([]);
 const loading = ref(true);
 const dialogVisible = ref(false);
 const ofertaSeleccionada = ref(null);
 
-// Snackbar state
 const snackbar = ref(false);
 const snackbarText = ref('');
 const snackbarColor = ref('');
 
-// --- MOCK DATA (reemplazar con llamada a la API) ---
-const mockData = [
-  { id: 1, fechaPostulacion: '15 de Mayo, 2025', estado: 'CV Recibido', oferta: { id: 101, titulo: 'Desarrollador Frontend Vue.js', area: 'Tecnología', descripcionCompleta: 'Buscamos un desarrollador Vue con 3 años de experiencia para unirse a nuestro equipo de innovación...' }},
-  { id: 2, fechaPostulacion: '10 de Mayo, 2025', estado: 'En Revisión', oferta: { id: 102, titulo: 'Diseñador UX/UI Senior', area: 'Diseño', descripcionCompleta: 'Responsable de crear experiencias de usuario intuitivas y atractivas para nuestras aplicaciones móviles.' }},
-  { id: 3, fechaPostulacion: '05 de Mayo, 2025', estado: 'Proceso Finalizado', oferta: { id: 103, titulo: 'Analista de Datos PowerBI', area: 'Business Intelligence', descripcionCompleta: 'Analizar grandes volúmenes de datos y crear dashboards interactivos para la toma de decisiones.' }},
-  { id: 4, fechaPostulacion: '01 de Mayo, 2025', estado: 'Contactado para Entrevista', oferta: { id: 104, titulo: 'Project Manager', area: 'Operaciones', descripcionCompleta: 'Liderar proyectos de implementación de software desde la planificación hasta el cierre.' }},
-];
 
-// --- METHODS ---
 const cargarPostulaciones = async () => {
   loading.value = true;
   try {
-    // LLAMADA REAL A LA API:
-    // postulaciones.value = await PostulacionesService.getMisPostulaciones();
-    
-    // Usando datos de ejemplo por ahora:
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simula la carga de red
-    postulaciones.value = mockData;
-
+    PostulacionesService.misPostulaciones()
+      .then(response => {
+        postulaciones.value = response;
+      })
+      .catch(error => {
+        console.error("Error al cargar las postulaciones:", error);
+        snackbarText.value = 'No se pudieron cargar tus postulaciones.';
+        snackbarColor.value = 'error';
+        snackbar.value = true;
+      });
   } catch (error) {
     console.error("Error al cargar las postulaciones:", error);
     snackbarText.value = 'No se pudieron cargar tus postulaciones.';
@@ -168,25 +155,14 @@ const verOferta = (oferta) => {
   dialogVisible.value = true;
 };
 
-const retirarPostulacion = async (id) => {
-  // Aquí iría la lógica para llamar al servicio y eliminar la postulación
-  console.log(`Retirando postulación con id: ${id}`);
-  snackbarText.value = 'Tu postulación ha sido retirada.';
-  snackbarColor.value = 'success';
-  snackbar.value = true;
-  // Opcional: Recargar la lista para que desaparezca la tarjeta
-  cargarPostulaciones(); 
-};
-
 const navegarAExplorarOfertas = () => {
-  router.push({ name: 'portalOfertas' }); // Asegúrate de que esta ruta exista
+  router.push({ name: 'portalOfertas' }); 
 };
 
-// --- HELPERS VISUALES ---
 const getColorPorEstado = (estado) => {
   const colores = {
-    'CV Recibido': 'blue-lighten-1',
-    'En Revisión': 'primary',
+    'Postulado': 'blue-lighten-1',
+    'Seleccion': 'primary',
     'Contactado para Entrevista': 'success',
     'Proceso Finalizado': 'grey-darken-1',
     'Rechazado': 'error',
@@ -196,8 +172,8 @@ const getColorPorEstado = (estado) => {
 
 const getIconoPorEstado = (estado) => {
   const iconos = {
-    'CV Recibido': 'mdi-email-receive-outline',
-    'En Revisión': 'mdi-file-eye-outline',
+    'Postulado': 'mdi-email-receive-outline',
+    'Seleccion': 'mdi-file-eye-outline',
     'Contactado para Entrevista': 'mdi-phone-forward-outline',
     'Proceso Finalizado': 'mdi-check-decagram-outline',
     'Rechazado': 'mdi-close-circle-outline',
@@ -205,7 +181,6 @@ const getIconoPorEstado = (estado) => {
   return iconos[estado] || 'mdi-help-circle-outline';
 };
 
-// --- LIFECYCLE HOOKS ---
 onMounted(cargarPostulaciones);
 </script>
 

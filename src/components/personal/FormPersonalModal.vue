@@ -187,7 +187,6 @@ const cargarDatosDelPersonal = () => {
     
     Object.assign(formData, props.personal);
     console.log('Datos recibidos en el modal (props.personal):', props.personal);
-    // Convertir fechas string a objetos Date para los pickers
     if (props.personal.fechaNacimiento) formData.fechaNacimiento = new Date(props.personal.fechaNacimiento);
     if (props.personal.fechaIngresoCompania) formData.fechaIngresoCompania = new Date(props.personal.fechaIngresoCompania);
   } else {

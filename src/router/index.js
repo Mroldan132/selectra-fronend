@@ -106,7 +106,13 @@ const router = createRouter({
       name: 'gestionArbolPuestos',
       component: () => import('@/views/ArbolPuestosView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
-    }   
+    },  
+{ 
+      path: '/aspirantes',
+      name: 'gestionAspirantes',
+      component: () => import('@/views/GestionAspirantesView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    }
   ]
 });
 

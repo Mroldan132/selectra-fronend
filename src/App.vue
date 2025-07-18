@@ -449,7 +449,13 @@ const menuConfig = [
         icon: 'mdi-file-document-outline',
         to: { name: 'gestionTiposDocumentos' },
         roles: ['Administrador']
-      },
+        },
+        {
+            title: 'Tipos de Preguntas Filtro',
+            icon: 'mdi-help-circle-outline',
+            to: { name: 'gestionTiposPreguntasFiltro' }, 
+            roles: ['Administrador']
+        },
     ]
   },
   {

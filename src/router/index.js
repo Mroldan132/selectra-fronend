@@ -60,12 +60,12 @@ const router = createRouter({
       component: () => import('@/views/PortalDeOfertas.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
     },
-    {
-      path: '/TipoPreguntas',
-      name: 'gestionTiposPreguntas',
-      component: () => import('@/views/GestionTipoPreguntasView.vue'),
-      meta: { requiresAuth: true, roles: ['Administrador'] }
-    },
+      {
+        path: '/TipoPreguntasFiltro',
+        name: 'gestionTiposPreguntasFiltro',
+        component: () => import('@/views/GestionTipoPreguntasView.vue'),
+       meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
     {
       path: '/areas',
       name: 'gestionAreas',

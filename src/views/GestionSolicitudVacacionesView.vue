@@ -18,24 +18,20 @@
           hover
           @click:row="(_, { item }) => abrirModalDetalle(item)"
         >
-          <!-- Slot para formatear la fecha de inicio -->
           <template v-slot:item.fechaInicio="{ item }">
             {{ formatDate(item.fechaInicio) }}
           </template>
 
-          <!-- Slot para formatear la fecha de fin -->
           <template v-slot:item.fechaFin="{ item }">
             {{ formatDate(item.fechaFin) }}
           </template>
 
-          <!-- Slot para mostrar el estado como un chip de color -->
           <template v-slot:item.estado="{ item }">
             <v-chip :color="getStatusColor(item.estado)" size="small" label>
               {{ item.estado }}
             </v-chip>
           </template>
 
-          <!-- Slot para los botones de acciones -->
           <template v-slot:item.actions="{ item }">
             <v-tooltip location="top" text="Editar Solicitud">
               <template v-slot:activator="{ props }">
@@ -67,7 +63,6 @@
       </v-card-text>
     </v-card>
 
-    <!-- El modal ahora escucha el evento 'save-success' -->
     <SolicitudVacacionesModal
       v-model="dialogVisible"
       :solicitud="solicitudSeleccionada"
@@ -86,7 +81,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import SolicitudVacacionesService from '@/services/SolicitudVacacionesService';
-import SolicitudVacacionesModal from '@/components/SolicitudVacaciones/AprobarSolicitudVacacionesModal.vue'; // Asegúrate que el nombre y ruta sean correctos
+import SolicitudVacacionesModal from '@/components/SolicitudVacaciones/SolicitudVacacionesModal.vue'; // Asegúrate que el nombre y ruta sean correctos
 import { useAuthStore } from '@/stores/authStore'; // Asumiendo que usas Pinia para el rol
 
 // --- STATE ---
@@ -143,11 +138,6 @@ function abrirModalDetalle(item) {
   dialogVisible.value = true;
 }
 
-function abrirModalGestion(item) {
-    // Aquí iría la lógica para un futuro modal de aprobación.
-    abrirModalDetalle(item);
-}
-
 // Se ejecuta cuando el modal emite 'save-success'
 function handleSaveSuccess() {
   showSnackbar('Solicitud guardada con éxito.');
@@ -182,7 +172,7 @@ function getStatusColor(status) {
 
 <style scoped>
 .data-table-rounded {
-  border-radius: 0 0 16px 16px; /* Ajusta para que coincida con el rounded="xl" del v-card */
+  border-radius: 0 0 16px 16px; 
 }
 
 .gestion-solicitudes-view .v-data-table__tr:hover {

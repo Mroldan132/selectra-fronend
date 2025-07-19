@@ -69,7 +69,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import AprobarSolicitudVacacionesModal from '@/components/SolicitudVacaciones/AprobarSolicitudVacacionesModal.vue';
+import AprobarSolicitudVacacionesModal from '@/components/SolicitudVacaciones/SolicitudVacacionesModal.vue';
 import TipoDocumentoModal from '@/components/TipoDocumentos/TipoDocumentoModal.vue'; 
 import TipoDocumentoService from '@/services/TipoDocumentoService'; 
 

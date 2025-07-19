@@ -106,7 +106,12 @@ const router = createRouter({
       name: 'gestionArbolPuestos',
       component: () => import('@/views/ArbolPuestosView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
-    }   
+    },
+    {
+      path: '/gestion-aprobacion-vacaciones',
+      name: 'gestionAprobacionVacaciones',
+      component: () => import('@/views/GestionAprobacionVacacionesView.vue'),
+    }
   ]
 });
 

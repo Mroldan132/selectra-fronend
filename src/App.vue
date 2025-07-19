@@ -380,6 +380,12 @@ const menuConfig = [
         icon: 'mdi-calendar-check-outline',
         to: { name: 'gestionSolicitudVacaciones' },
         roles: ['Solicitante', 'JefeAprobador']
+      },
+      {
+        title: 'Vaciones Pendientes Aprobar',
+        icon: 'mdi-calendar-clock',
+        to: { name: 'gestionAprobacionVacaciones' },
+        roles: ['JefeAprobador']
       }
     ]
   },

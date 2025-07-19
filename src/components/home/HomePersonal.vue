@@ -1,145 +1,150 @@
 <template>
-  <div>
-    <v-card-text class="pa-5">
-      <p class="text-body-1 mb-6">
-        Desde aquí podrás gestionar los procesos de reclutamiento y selección de personal.
-        Utiliza las acciones rápidas a continuación o el menú de navegación principal.
+  <div class="pa-4 pa-md-6">
+    <!-- 1. Saludo Personalizado y Descripción -->
+    <div class="mb-8">
+      <h2 class="text-h4 font-weight-light mb-2">
+        Hola, <span class="font-weight-medium text-primary">{{ authStore.currentUser?.nombre || 'Usuario' }}</span>
+      </h2>
+      <p class="text-body-1 text-grey-darken-1">
+        Bienvenido a tu portal. Aquí tienes un resumen de tu actividad y accesos directos.
       </p>
+    </div>
 
-      <h3 class="text-h6 mb-4 text-primary">Accesos Rápidos:</h3>
-      <v-row dense>
-        <v-col
-          v-for="action in quickActionsFiltered"
-          :key="action.title"
-          cols="12" sm="6" md="4"
-        >
-          <v-hover v-slot="{ isHovering, props: hoverProps }">
-            <v-card
-              v-bind="hoverProps"
-              :color="action.color ? `${action.color}-lighten-5` : 'grey-lighten-5'"
-              class="quick-action-card fill-height"
-              rounded="lg"
-              :elevation="isHovering ? 8 : 2"
-              @click="action.click ? action.click() : (action.to ? router.push(action.to) : null)"
-              :to="action.to && !action.click ? action.to : undefined"
-              link
-            >
-              <v-list-item class="pa-4">
-                <template v-slot:prepend>
-                  <v-avatar :color="action.color || 'primary'" rounded="md" size="48" class="mr-4">
-                    <v-icon color="white" :icon="action.icon" size="28"></v-icon>
-                  </v-avatar>
-                </template>
-                <v-list-item-title class="text-body-1 font-weight-medium text-grey-darken-3">{{ action.title }}</v-list-item-title>
-                <v-list-item-subtitle v-if="action.subtitle" class="text-caption">{{ action.subtitle }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-card>
-          </v-hover>
-        </v-col>
-      </v-row>
-    </v-card-text>
-
-    <v-row class="mb-6">
-      <v-col cols="12" sm="6" md="4" v-for="kpi in kpiData" :key="kpi.title">
-        <v-card rounded="xl" class="fill-height d-flex flex-column elevation-2 hover-card">
+    <!-- 2. KPIs (Indicadores Clave de Rendimiento) -->
+    <v-row dense class="mb-8">
+      <v-col v-for="kpi in dashboardKPIs" :key="kpi.title" cols="12" sm="6" md="3">
+        <v-card rounded="xl" class="fill-height elevation-2 hover-card">
           <v-card-text class="d-flex align-center pa-4">
-            <v-avatar :color="kpi.avatarColor || 'primary'" rounded="lg" size="52" class="mr-4 elevation-1">
-              <v-icon color="white" :icon="kpi.icon" size="28"></v-icon>
+            <v-avatar :color="kpi.color" rounded="lg" size="56" class="mr-4 elevation-1">
+              <v-icon color="white" :icon="kpi.icon" size="30"></v-icon>
             </v-avatar>
             <div>
-              <div class="text-h5 font-weight-bold text-grey-darken-3">{{ kpi.value }}</div>
-              <div class="text-caption text-grey-darken-1">{{ kpi.title }}</div>
+              <div class="text-h4 font-weight-bold text-grey-darken-3">{{ kpi.value }}</div>
+              <div class="text-body-2 text-grey-darken-1">{{ kpi.title }}</div>
             </div>
           </v-card-text>
-          <v-spacer></v-spacer>
-          <v-card-actions v-if="kpi.actionLink" class="pt-0 px-4 pb-3">
-            <v-btn
-              variant="text"
-              :color="kpi.actionColor || 'primary'"
-              :to="kpi.actionLink.to"
-              block
-              class="text-capitalize"
-              size="small"
-            >
-              {{ kpi.actionLink.text }}
-              <v-icon right size="small" class="ml-1">mdi-arrow-right-thin</v-icon>
-            </v-btn>
-          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
-
+    
+    <!-- 3. Contenido Principal del Dashboard -->
     <v-row>
+      <!-- Columna Izquierda: Información General (Requerimientos y Vacaciones) -->
       <v-col cols="12" md="7">
-        <v-card rounded="xl" class="elevation-2">
-          <v-card-title class="d-flex align-center text-h6 font-weight-medium text-grey-darken-2 py-3">
-            Mis Requerimientos Recientes
-            <v-spacer></v-spacer>
-            <v-btn variant="text" color="primary" size="small" :to="{ name: 'gestionRequerimientos' }" class="text-capitalize">
-              Ver todos
-            </v-btn>
-          </v-card-title>
+        <v-card rounded="xl" class="elevation-2 fill-height">
+          <v-tabs v-model="tabPrincipal" bg-color="transparent" color="primary">
+            <v-tab value="requerimientos">Requerimientos</v-tab>
+            <v-tab value="vacaciones">Vacaciones</v-tab>
+          </v-tabs>
           <v-divider></v-divider>
-          <v-list lines="two" class="py-0">
-            <template v-if="recentRequirements.length > 0">
-              <template v-for="(req, index) in recentRequirements" :key="req.requerimientoId">
-                <v-list-item
-                  @click="verDetalleRequerimiento(req.requerimientoId)"
-                  class="py-3 list-item-hover"
-                >
-                  <template v-slot:prepend>
-                    <v-avatar :color="getEstadoColor(req.estadoNombre)" size="40" class="mr-3 elevation-1">
-                      <v-icon color="white">{{ getEstadoIcon(req.estadoNombre) }}</v-icon>
-                    </v-avatar>
+          <v-window v-model="tabPrincipal">
+            <!-- Pestaña Requerimientos -->
+            <v-window-item value="requerimientos">
+              <v-card-title class="d-flex align-center text-h6 font-weight-medium text-grey-darken-2 py-3">
+                Mis Requerimientos Recientes
+                <v-spacer></v-spacer>
+                <v-btn variant="text" color="primary" size="small" :to="{ name: 'gestionRequerimientos' }" class="text-capitalize">Ver todos</v-btn>
+              </v-card-title>
+              <v-list lines="two" class="py-0">
+                <template v-if="recentRequirements.length > 0">
+                  <template v-for="(req, index) in recentRequirements" :key="req.requerimientoId">
+                    <v-list-item @click="verDetalleRequerimiento(req.requerimientoId)" class="py-3 list-item-hover">
+                      <template v-slot:prepend>
+                        <v-avatar :color="getEstadoColor(req.estadoNombre)" size="40" class="mr-3 elevation-1">
+                          <v-icon color="white">{{ getEstadoIcon(req.estadoNombre) }}</v-icon>
+                        </v-avatar>
+                      </template>
+                      <v-list-item-title class="font-weight-medium text-body-1 mb-1">{{ req.tituloRequerimiento }}</v-list-item-title>
+                      <v-list-item-subtitle class="text-caption">ID: {{ req.requerimientoId }} | Creado: {{ formatRelativeTime(req.fechaCreacion) }}</v-list-item-subtitle>
+                      <template v-slot:append>
+                        <v-chip :color="getEstadoColor(req.estadoNombre)" size="small" variant="tonal" label class="mr-2">{{ req.estadoNombre }}</v-chip>
+                        <v-icon color="grey-darken-1">mdi-chevron-right</v-icon>
+                      </template>
+                    </v-list-item>
+                    <v-divider v-if="index < recentRequirements.length - 1"></v-divider>
                   </template>
-                  <v-list-item-title class="font-weight-medium text-body-1 mb-1">{{ req.tituloRequerimiento }}</v-list-item-title>
-                  <v-list-item-subtitle class="text-caption">
-                    ID: {{ req.requerimientoId }} | Creado: {{ formatRelativeTime(req.fechaCreacion) }}
-                  </v-list-item-subtitle>
-                  <template v-slot:append>
-                    <v-chip :color="getEstadoColor(req.estadoNombre)" size="small" variant="tonal" label class="mr-2">
-                      {{ req.estadoNombre }}
-                    </v-chip>
-                    <v-icon color="grey-darken-1">mdi-chevron-right</v-icon>
-                  </template>
+                </template>
+                <v-list-item v-else class="text-center text-grey-darken-1 py-10">
+                  <p>No hay requerimientos recientes.</p>
                 </v-list-item>
-                <v-divider v-if="index < recentRequirements.length - 1"></v-divider>
-              </template>
-            </template>
-            <v-list-item v-else>
-              <v-list-item-title class="text-center text-grey-darken-1 py-4">
-                No hay requerimientos recientes para mostrar.
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
+              </v-list>
+            </v-window-item>
+            <!-- Pestaña Vacaciones -->
+            <v-window-item value="vacaciones">
+              <v-card-title class="d-flex align-center text-h6 font-weight-medium text-grey-darken-2 py-3">
+                Estado de Mis Solicitudes
+                <v-spacer></v-spacer>
+                <v-btn variant="text" color="primary" size="small" :to="{ name: 'gestionSolicitudVacaciones' }" class="text-capitalize">Ver todas</v-btn>
+              </v-card-title>
+              <v-card-text v-if="misSolicitudes.length > 0">
+                <VueApexCharts type="donut" height="320" :options="chartEstadoOptions" :series="chartEstadoSeries"></VueApexCharts>
+              </v-card-text>
+              <v-card-text v-else class="text-center text-grey-darken-1 py-10">
+                <p>No tienes solicitudes de vacaciones para mostrar.</p>
+              </v-card-text>
+            </v-window-item>
+          </v-window>
         </v-card>
       </v-col>
 
+      <!-- Columna Derecha: Tareas Pendientes (Aprobaciones y Notificaciones) -->
       <v-col cols="12" md="5">
-        <v-card rounded="xl" class="fill-height elevation-2">
-          <v-card-title class="text-h6 font-weight-medium text-grey-darken-2 py-3">
-            Notificaciones Pendientes
-          </v-card-title>
+        <v-card rounded="xl" class="elevation-2 fill-height">
+          <v-tabs v-model="tabAcciones" bg-color="transparent" color="primary">
+            <v-tab v-if="esJefeAprobador" value="aprobaciones">Aprobaciones</v-tab>
+            <v-tab value="notificaciones">Notificaciones</v-tab>
+          </v-tabs>
           <v-divider></v-divider>
-          <v-list lines="one" class="py-0" v-if="unreadNotifications.length > 0">
-            <template v-for="(notif, index) in unreadNotifications.slice(0, 5)" :key="notif.id">
-              <v-list-item @click="irANotificacion(notif)" class="py-3 list-item-hover">
-                <template v-slot:prepend>
-                  <v-icon :color="getNotifColor(notif.type)" class="mr-3" size="28">{{ getNotifIcon(notif.type) }}</v-icon>
+          <v-window v-model="tabAcciones">
+            <!-- Pestaña Aprobaciones (Solo Jefes) -->
+            <v-window-item v-if="esJefeAprobador" value="aprobaciones">
+              <v-card-title class="d-flex align-center text-subtitle-1 font-weight-medium text-grey-darken-2 py-2">
+                Vacaciones por Aprobar
+              </v-card-title>
+              <v-list lines="two" class="py-0">
+                <template v-if="solicitudesPorAprobar.length > 0">
+                  <template v-for="(req, index) in solicitudesPorAprobar.slice(0, 4)" :key="req.id">
+                    <v-list-item @click="irAGestionar(req)" class="py-3 list-item-hover">
+                      <template v-slot:prepend>
+                        <v-avatar color="blue-grey-lighten-4" size="40" class="mr-3">
+                          <span class="text-blue-grey-darken-2 font-weight-bold">{{ req.nombreEmpleado.charAt(0) }}</span>
+                        </v-avatar>
+                      </template>
+                      <v-list-item-title class="font-weight-medium">{{ req.nombreEmpleado }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ req.diasSolicitados }} días ({{ formatDate(req.fechaInicio) }})</v-list-item-subtitle>
+                      <template v-slot:append><v-icon color="grey-darken-1">mdi-chevron-right</v-icon></template>
+                    </v-list-item>
+                    <v-divider v-if="index < solicitudesPorAprobar.slice(0, 4).length - 1"></v-divider>
+                  </template>
                 </template>
-                <v-list-item-title class="text-body-2 font-weight-medium">{{ notif.title }}</v-list-item-title>
-                <v-list-item-subtitle class="text-caption">{{ formatRelativeTime(notif.timestamp) }}</v-list-item-subtitle>
-                <template v-slot:append>
-                  <v-icon color="grey-darken-1" size="small">mdi-chevron-right</v-icon>
+                <v-list-item v-else class="text-center text-grey-darken-1 py-10">
+                  <p>No hay solicitudes pendientes.</p>
+                </v-list-item>
+              </v-list>
+              <v-card-actions v-if="solicitudesPorAprobar.length > 0" class="pa-2">
+                <v-btn variant="text" color="primary" block :to="{ name: 'gestionAprobacionVacaciones' }" class="text-capitalize">Gestionar todas</v-btn>
+              </v-card-actions>
+            </v-window-item>
+            <!-- Pestaña Notificaciones -->
+            <v-window-item value="notificaciones">
+              <v-card-title class="text-subtitle-1 font-weight-medium text-grey-darken-2 py-2">Notificaciones Pendientes</v-card-title>
+              <v-list lines="one" class="py-0" v-if="unreadNotifications.length > 0">
+                <template v-for="(notif, index) in unreadNotifications.slice(0, 5)" :key="notif.id">
+                  <v-list-item @click="irANotificacion(notif)" class="py-3 list-item-hover">
+                    <template v-slot:prepend>
+                      <v-icon :color="getNotifColor(notif.type)" class="mr-3" size="28">{{ getNotifIcon(notif.type) }}</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 font-weight-medium">{{ notif.title }}</v-list-item-title>
+                    <v-list-item-subtitle class="text-caption">{{ formatRelativeTime(notif.timestamp) }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider v-if="index < unreadNotifications.slice(0, 5).length - 1"></v-divider>
                 </template>
-              </v-list-item>
-              <v-divider v-if="index < unreadNotifications.slice(0, 5).length - 1"></v-divider>
-            </template>
-          </v-list>
-          <v-card-text v-else class="text-center text-grey-darken-1 py-10">
-            <v-icon size="36" class="mb-2">mdi-bell-check-outline</v-icon>
-            <p>No tienes notificaciones pendientes.</p>
-          </v-card-text>
+              </v-list>
+              <v-card-text v-else class="text-center text-grey-darken-1 py-10">
+                <p>No tienes notificaciones pendientes.</p>
+              </v-card-text>
+            </v-window-item>
+          </v-window>
         </v-card>
       </v-col>
     </v-row>
@@ -151,110 +156,155 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import SolicitudVacacionesService from '@/services/SolicitudVacacionesService';
 import RequerimientoService from '@/services/RequerimientoService';
+import VueApexCharts from 'vue3-apexcharts';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
+const esJefeAprobador = computed(() => authStore.currentUser?.rol === 'JefeAprobador');
 
-// --- Datos Simulados para KPIs ---
-const kpiData = ref([
-  // Agrega aquí tus KPIs reales
-]);
-const allQuickActions = ref([
-  { title: 'Mis Requerimientos', icon: 'mdi-format-list-checks', color: 'primary', variant: 'tonal', to: { name: 'gestionRequerimientos' }, roles: ['Solicitante', 'JefeAprobador'] },
-  // Agrega más acciones rápidas si lo necesitas
-]);
+// --- STATE ---
+const tabPrincipal = ref('requerimientos');
+const tabAcciones = ref(esJefeAprobador.value ? 'aprobaciones' : 'notificaciones');
+const loading = ref(true);
 
-const quickActionsFiltered = computed(() => {
-  const userRole = authStore.currentUser?.rol;
-  if (!userRole) return [];
-  return allQuickActions.value.filter(action => action.roles.includes(userRole));
+// Data
+const misSolicitudes = ref([]);
+const solicitudesPorAprobar = ref([]);
+const recentRequirements = ref([]);
+const dashboardKPIs = ref([]);
+
+// --- CARGA DE DATOS ---
+onMounted(async () => {
+  loading.value = true;
+  await cargarDatosDashboard();
+  loading.value = false;
 });
 
-// --- Datos Simulados para Requerimientos Recientes ---
-const recentRequirements = ref([]);
-const fetchRecentRequirements = async () => {
-  recentRequirements.value = await RequerimientoService.getMisRequerimientosRecientes();
+const cargarDatosDashboard = async () => {
+  try {
+    const promesas = [
+      SolicitudVacacionesService.getMisSolicitudes(),
+      RequerimientoService.getMisRequerimientosRecientes()
+    ];
+    if (esJefeAprobador.value) {
+      promesas.push(SolicitudVacacionesService.getMisPentientes());
+    }
+    
+    const [resMisSolicitudes, resRecentReqs, resPorAprobar] = await Promise.all(promesas);
+
+    misSolicitudes.value = resMisSolicitudes || [];
+    recentRequirements.value = resRecentReqs || [];
+    if (resPorAprobar) {
+      solicitudesPorAprobar.value = resPorAprobar;
+    }
+
+    prepararKPIs();
+    prepararGraficos();
+  } catch (error) {
+    console.error("Error al cargar datos del dashboard:", error);
+  }
 };
 
+// --- KPIs ---
+const prepararKPIs = () => {
+  const kpis = [];
+  
+  if (esJefeAprobador.value) {
+    kpis.push({
+      title: 'Vacaciones por Aprobar',
+      value: solicitudesPorAprobar.value.length,
+      icon: 'mdi-account-clock-outline',
+      color: 'orange-darken-2'
+    });
+  }
+
+  kpis.push({
+    title: 'Requerimientos Pendientes',
+    value: recentRequirements.value.filter(r => r.estadoNombre?.toLowerCase().includes('pendiente')).length,
+    icon: 'mdi-clipboard-text-clock-outline',
+    color: 'blue'
+  });
+
+  kpis.push({
+    title: 'Vacaciones Pendientes',
+    value: misSolicitudes.value.filter(s => s.estado.toLowerCase() === 'pendiente').length,
+    icon: 'mdi-clock-alert-outline',
+    color: 'deep-purple-accent-3'
+  });
+
+  kpis.push({
+    title: 'Días Aprobados (Año)',
+    value: misSolicitudes.value.filter(s => s.estado.toLowerCase() === 'aprobada').reduce((acc, s) => acc + s.diasSolicitados, 0),
+    icon: 'mdi-calendar-check-outline',
+    color: 'teal'
+  });
+
+  dashboardKPIs.value = kpis;
+};
+
+// --- GRÁFICOS ---
+const chartEstadoSeries = ref([]);
+const chartEstadoOptions = ref({
+  chart: { type: 'donut' },
+  labels: [],
+  colors: ['#FF9800', '#4CAF50', '#F44336'], // Naranja, Verde, Rojo
+  legend: { position: 'bottom' },
+  responsive: [{ breakpoint: 480, options: { chart: { width: '100%' }, legend: { position: 'bottom' } } }]
+});
+
+const prepararGraficos = () => {
+  const estados = { Pendiente: 0, Aprobada: 0, Rechazada: 0 };
+  misSolicitudes.value.forEach(s => {
+    const estadoNormalizado = s.estado.charAt(0).toUpperCase() + s.estado.slice(1).toLowerCase();
+    if (estadoNormalizado in estados) {
+      estados[estadoNormalizado]++;
+    }
+  });
+  chartEstadoOptions.value.labels = Object.keys(estados);
+  chartEstadoSeries.value = Object.values(estados);
+};
+
+// --- NOTIFICACIONES ---
 const unreadNotifications = computed(() => {
   return notificationStore.notifications
     .filter(n => !n.isRead)
     .sort((a, b) => new Date(b.timestamp || b.fechaCreacion) - new Date(a.timestamp || a.fechaCreacion));
 });
 
+// --- HELPERS ---
 const formatRelativeTime = (isoString) => {
-  if (!isoString) return 'hace un momento';
+  if (!isoString) return '';
   const date = new Date(isoString);
   const now = new Date();
   const diffSeconds = Math.round((now.getTime() - date.getTime()) / 1000);
-
-  if (diffSeconds < 1) return 'ahora';
   if (diffSeconds < 60) return `hace ${diffSeconds}s`;
   const diffMinutes = Math.round(diffSeconds / 60);
   if (diffMinutes < 60) return `hace ${diffMinutes}m`;
   const diffHours = Math.round(diffMinutes / 60);
   if (diffHours < 24) return `hace ${diffHours}h`;
-  const diffDays = Math.round(diffHours / 24);
-  if (diffDays === 1) return `ayer`;
-  if (diffDays < 7) return `hace ${diffDays} días`;
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
 };
 
-const getEstadoColor = (estadoNombre) => {
-  if (!estadoNombre) return 'grey';
-  const lowerEstado = estadoNombre.toLowerCase();
-  if (lowerEstado.includes('pendiente')) return 'orange-darken-1';
-  if (lowerEstado.includes('aprobado')) return 'green-darken-1';
-  if (lowerEstado.includes('rechazado')) return 'red-darken-1';
-  if (lowerEstado.includes('proceso')) return 'blue-darken-1';
-  return 'grey-darken-1';
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
 };
 
-const getEstadoIcon = (estadoNombre) => {
-  if (!estadoNombre) return 'mdi-help-circle-outline';
-  const lowerEstado = estadoNombre.toLowerCase();
-  if (lowerEstado.includes('pendiente')) return 'mdi-clock-alert-outline';
-  if (lowerEstado.includes('aprobado')) return 'mdi-check-circle-outline';
-  if (lowerEstado.includes('rechazado')) return 'mdi-close-circle-outline';
-  if (lowerEstado.includes('proceso')) return 'mdi-progress-wrench';
-  return 'mdi-file-document-outline';
-};
+const getEstadoColor = (estado) => (estado?.toLowerCase().includes('aprobado') ? 'green' : estado?.toLowerCase().includes('pendiente') ? 'orange' : 'red');
+const getEstadoIcon = (estado) => (estado?.toLowerCase().includes('aprobado') ? 'mdi-check' : estado?.toLowerCase().includes('pendiente') ? 'mdi-clock-outline' : 'mdi-close');
+const getNotifIcon = (type) => (type?.toLowerCase().includes('aprobado') ? 'mdi-check-circle-outline' : type?.toLowerCase().includes('rechazado') ? 'mdi-close-circle-outline' : 'mdi-bell-ring-outline');
+const getNotifColor = (type) => (type?.toLowerCase().includes('aprobado') ? 'success' : type?.toLowerCase().includes('rechazado') ? 'error' : 'primary');
 
-const getNotifIcon = (type) => {
-  switch (type) {
-    case 'NuevoRequerimiento': case 'Requerimiento': return 'mdi-file-plus-outline';
-    case 'RequerimientoAprobado': return 'mdi-check-circle-outline';
-    case 'RequerimientoRechazado': return 'mdi-close-circle-outline';
-    default: return 'mdi-bell-ring-outline';
-  }
+// --- NAVEGACIÓN ---
+const verDetalleRequerimiento = (id) => router.push({ name: 'gestionRequerimientos', query: { accionModal: 'ver', idRequerimiento: id } });
+const irAGestionar = () => router.push({ name: 'gestionAprobacionVacaciones' });
+const irANotificacion = (notif) => {
+  if (notif.link) router.push(notif.link);
+  if (!notif.isRead) notificationStore.markAsRead(notif.id);
 };
-const getNotifColor = (type) => {
-  switch (type) {
-    case 'NuevoRequerimiento': case 'Requerimiento': return 'primary';
-    case 'RequerimientoAprobado': return 'success';
-    case 'RequerimientoRechazado': return 'error';
-    default: return 'info';
-  }
-};
-
-const verDetalleRequerimiento = (id) => {
-  router.push({ name: 'gestionRequerimientos', query: { accionModal: 'ver', idRequerimiento: id } });
-};
-
-const irANotificacion = (notificacion) => {
-  if (notificacion.link) {
-    router.push(notificacion.link);
-  }
-  if (!notificacion.isRead) {
-    notificationStore.markAsRead(notificacion.id);
-  }
-};
-
-onMounted(() => {
-  fetchRecentRequirements();
-});
 </script>
 
 <style scoped>
@@ -263,19 +313,10 @@ onMounted(() => {
 }
 .hover-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
 }
-
-.quick-action-card {
-  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
-}
-.quick-action-card:hover {
-  transform: translateY(-3px);
-  background-color: rgba(var(--v-theme-primary), 0.08) !important;
-}
-
 .list-item-hover:hover {
-  background-color: rgba(0,0,0,0.03);
+  background-color: rgba(0,0,0,0.04);
   cursor: pointer;
 }
 </style>

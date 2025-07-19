@@ -98,6 +98,21 @@
                       :rules="[rules.required]"
                     />
                   </v-col>
+
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model.number="form.tipoPregunta"
+                      label="Tipo de Pregunta"
+                      type="number"
+                      variant="outlined"
+                      :rules="[v => v === 1 || v === 2 || 'Debe ingresar 1 o 2']"
+                      min="1"
+                      max="2"
+                      required
+                    />
+                  </v-col> 
+   
+
                   <v-col cols="12" md="6">
                     <v-select
                       v-model="form.cargoId"
@@ -168,6 +183,7 @@ const form = ref({
   sueldoOfrecido: null,
   areaId: null,
   cargoId: null,
+  tipoPregunta: 1,
   responsable: '',
   direccionTrabajo: '',
   referenciaUbicacion: '',
@@ -176,6 +192,9 @@ const form = ref({
 
 const areas = ref([])
 const cargos = ref([])
+// const tipoPreguntas = ref([]); 
+
+
 
 // --- Reglas de Validación ---
 const rules = {

@@ -13,28 +13,23 @@
           <v-divider></v-divider>
         </v-card>
 
+        <HomeAdministrador v-if="userRole === 'Administrador'" />
+
         <HomePersonal v-if="userRole === 'Solicitante' || userRole === 'JefeAprobador'" />
 
         <HomeAspirante v-else-if="userRole === 'Aspirante'" />
 
-        <template v-else-if="userRole === 'Administrador'">
-          <v-card class="elevation-2 pa-8 text-center" rounded="xl">
-            <v-icon size="48" color="primary" class="mb-4">mdi-shield-account</v-icon>
-            <h2 class="text-h5 font-weight-bold mb-2">Bienvenido Administrador</h2>
-            <p class="text-body-1 mb-0">
-              Utiliza el menú para gestionar usuarios, áreas, cargos y configuraciones del sistema.
-            </p>
-          </v-card>
-        </template>
+        
 
-        <template v-else>
+        <!-- <template v-else>
           <v-card class="elevation-2 pa-8 text-center" rounded="xl">
             <p class="text-h6">Por favor, inicia sesión para acceder a las funcionalidades.</p>
             <v-btn color="primary" :to="{ name: 'login' }" class="mt-4" rounded="lg" size="large">
               Ir a Iniciar Sesión
             </v-btn>
           </v-card>
-        </template>
+        </template> -->
+
       </v-col>
     </v-row>
   </v-container>
@@ -45,6 +40,8 @@ import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import HomePersonal from '@/components/home/HomePersonal.vue';
 import HomeAspirante from '@/components/home/HomeAspirante.vue';
+import HomeAdministrador from '@/components/home/HomeAdministrador.vue';
+
 
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.currentUser?.rol);

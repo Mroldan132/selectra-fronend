@@ -6,6 +6,7 @@ import GestionRequerimientosView from '../views/GestionRequerimientosView.vue';
 import RegistroAspirantePage from '../views/RegistroAspirante.vue'; 
 import GestionRequerimientosAdmView from '../views/GestionRequerimientosAdmView.vue';
 import GestionSolicitudVacacionesView from '../views/GestionSolicitudVacacionesView.vue';
+
 import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
@@ -65,6 +66,18 @@ const router = createRouter({
         name: 'gestionTiposPreguntasFiltro',
         component: () => import('@/views/GestionTipoPreguntasView.vue'),
        meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
+      {
+        path: '/preguntas-filtro',
+        name: 'gestionPreguntasFiltro',
+        component: () => import('@/views/PreguntasFiltrosView.vue'),
+        meta: { requiresAuth: true, roles: ['Administrador'] }
+      },
+      {
+         path: '/opcion-pregunta-filtro',
+         name: 'gestionOpcionPreguntaFiltro',
+        component: () => import('@/views/OpcionPreguntaFiltroView.vue'),
+         meta: { requiresAuth: true, roles: ['Administrador'] }
       },
     {
       path: '/areas',

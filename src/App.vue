@@ -456,6 +456,18 @@ const menuConfig = [
             to: { name: 'gestionTiposPreguntasFiltro' }, 
             roles: ['Administrador']
         },
+        {
+            title: 'Preguntas Filtro',
+            icon: 'mdi-form-textbox',
+            to: { name: 'gestionPreguntasFiltro' },
+            roles: ['Administrador']
+        },
+        {
+            title: 'Opción Pregunta Filtro',
+            icon: 'mdi-format-list-bulleted',
+            to: { name: 'gestionOpcionPreguntaFiltro' },
+            roles: ['Administrador']
+        }
     ]
   },
   {

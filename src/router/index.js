@@ -111,7 +111,13 @@ const router = createRouter({
       path: '/gestion-aprobacion-vacaciones',
       name: 'gestionAprobacionVacaciones',
       component: () => import('@/views/GestionAprobacionVacacionesView.vue'),
-    }
+    },  
+    { 
+      path: '/aspirantes',
+      name: 'gestionAspirantes',
+      component: () => import('@/views/GestionAspirantesView.vue'),
+      meta: { requiresAuth: true, roles: ['Administrador'] }
+    },
   ]
 });
 

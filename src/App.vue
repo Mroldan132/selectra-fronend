@@ -409,6 +409,19 @@ const menuConfig = [
     ]
   },
   {
+    title: 'GESTIÓN DE ASPIRANTES',
+    divider: true,
+    roles: ['Administrador'], // Rol a nivel de sección para simplificar
+    items: [
+      {
+        title: 'Aspirantes',
+        icon: 'mdi-account-group-outline',
+        to: { name: 'gestionAspirantes' },
+        roles: ['Administrador']
+      }
+    ]
+  },
+  {
     title: 'PROCESO DE SELECCIÓN',
     divider: true,
     roles: ['Administrador'],

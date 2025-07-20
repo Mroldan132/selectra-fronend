@@ -362,7 +362,13 @@ const menuConfig = [
         icon: 'mdi-home-variant-outline',
         to: { name: 'home' },
         roles: ['Solicitante', 'JefeAprobador', 'Administrador', 'Aspirante']
-      }
+      },
+      {
+        title: 'Mi Perfil',
+        icon: 'mdi-account-circle-outline',
+        to: { name: 'miPerfil' },
+        roles: ['Solicitante', 'JefeAprobador', 'Administrador', 'Aspirante']
+      },
     ]
   },
   {

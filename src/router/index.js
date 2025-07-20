@@ -118,6 +118,12 @@ const router = createRouter({
       component: () => import('@/views/GestionAspirantesView.vue'),
       meta: { requiresAuth: true, roles: ['Administrador'] }
     },
+    {
+      path: '/mi-perfil',
+      name: 'miPerfil',
+      component: () => import('@/views/PerfilAspirante.vue'),
+      meta: { requiresAuth: true }
+    }
   ]
 });
 

@@ -71,6 +71,11 @@
                <UbigeoSelector v-model="formData.ubigeoNacimiento" label-prefix="Nacimiento:" :rules="[rules.required]"/>
               <UbigeoSelector v-model="formData.ubigeoResidencia" label-prefix="Residencia:" :rules="[rules.required]"/>
               <v-row>
+                <v-col cols="12" sm="12">
+                    <v-select v-model="formData.nivelAcademicoId" :items="nivelesAcademicos" label="Nivel Academico" item-title="nombre" item-value="nivelAcademicoId" :rules="[rules.required]" variant="outlined" density="compact" />
+                </v-col>
+              </v-row>
+              <v-row>
                 <v-col cols="12" sm="6"><v-text-field v-model="formData.telefono" label="Teléfono" variant="outlined" density="compact" /></v-col>
                 <v-col cols="12" sm="6"><v-text-field v-model="formData.emailPersonal" label="Email Personal" :rules="[rules.email]" variant="outlined" density="compact" /></v-col>
               </v-row>
@@ -124,6 +129,7 @@ import { ref, reactive, watch, computed, onMounted } from 'vue';
 import UbigeoSelector from '@/components/utils/UbigeoSelector.vue'; 
 import UsuarioService from '@/services/UsuarioService';
 import AspiranteService from '@/services/AspiranteService';
+import NivelAcademicosService from '@/services/NivelAcademicosService';
 import DatosPersonalesService from '@/services/DatosPersonalesService';
 
 // --- Props y Emits ---
@@ -152,6 +158,7 @@ const formData = reactive({
 // --- Estado para Selects y Datos Externos ---
 const roles = ref([]);
 const tiposDocumento = ref([]);
+const nivelesAcademicos = ref([]);
 
 // --- Reglas de Validación ---
 const rules = { /* ... (tus reglas son perfectas) */ };
@@ -305,10 +312,12 @@ onMounted(async () => {
   loadingForm.value = true;
   [
     roles.value,
-    tiposDocumento.value
+    tiposDocumento.value,
+    nivelesAcademicos.value
   ] = await Promise.all([
     UsuarioService.getRoles(),
-    DatosPersonalesService.getTiposDocumento()
+    DatosPersonalesService.getTiposDocumento(),
+    NivelAcademicosService.obtenerNivelAcademicos()
   ]);
   loadingForm.value = false;
   cargarDatosDelAspirante();

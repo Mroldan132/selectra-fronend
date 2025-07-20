@@ -474,7 +474,25 @@ const menuConfig = [
         icon: 'mdi-file-document-outline',
         to: { name: 'gestionTiposDocumentos' },
         roles: ['Administrador']
-      },
+        },
+        {
+            title: 'Tipos de Preguntas Filtro',
+            icon: 'mdi-help-circle-outline',
+            to: { name: 'gestionTiposPreguntasFiltro' }, 
+            roles: ['Administrador']
+        },
+        {
+            title: 'Preguntas Filtro',
+            icon: 'mdi-form-textbox',
+            to: { name: 'gestionPreguntasFiltro' },
+            roles: ['Administrador']
+        },
+        {
+            title: 'Opción Pregunta Filtro',
+            icon: 'mdi-format-list-bulleted',
+            to: { name: 'gestionOpcionPreguntaFiltro' },
+            roles: ['Administrador']
+        }
     ]
   },
   {

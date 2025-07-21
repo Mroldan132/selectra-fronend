@@ -237,13 +237,11 @@ const route = useRoute();
 
 const drawer = ref(true);
 
-// Lógica centralizada para controlar la visibilidad de la navegación
 const mostrarNavegacionPrincipal = computed(() => {
   const rutasSinLayout = ['login', 'registro-aspirante'];
   return authStore.isLoggedIn && !rutasSinLayout.includes(route.name);
 });
 
-// --- Lógica de Notificaciones y Autenticación (sin cambios) ---
 const handleLogout = () => {
   authStore.logout();
   notificationStore.clearNotifications();
@@ -273,7 +271,6 @@ const handleNotificationClick = (notification) => {
   }
 };
 
-// ... (El resto de tus funciones de notificaciones: getNotificationIcon, formatNotificationTime, etc. van aquí sin cambios) ...
 const getNotificationIcon = (type) => {
   switch (type) {
     case 'NuevoRequerimiento':
@@ -348,10 +345,6 @@ watch(() => authStore.isLoggedIn, (newIsLoggedIn) => {
   }
 });
 
-// --- ESTRUCTURA DE MENÚ MEJORADA ---
-
-// 1. Define toda la estructura del menú en un solo lugar.
-//    Cada item tiene una propiedad `roles` que indica quién puede verlo.
 const menuConfig = [
   {
     title: 'DASHBOARD',

@@ -4,20 +4,20 @@
             <v-toolbar flat color="white">
                 <v-toolbar-title class="font-weight-bold text-grey-darken-2">
                     <v-icon class="mr-2">mdi-format-list-bulleted</v-icon>
-                    Gestión de Opciones de Pregunta Filtro
+                    Gestiï¿½n de Opciones de Pregunta Filtro
                 </v-toolbar-title>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" dark class="mb-2" @click="abrirModalNuevo">
                     <v-icon left class="mr-2">mdi-plus-circle-outline</v-icon>
-                    Nueva Opción
+                    Nueva Opciï¿½n
                 </v-btn>
             </v-toolbar>
 
             <v-card-text>
                 <v-text-field v-model="search"
                               append-inner-icon="mdi-magnify"
-                              label="Buscar opción..."
+                              label="Buscar opciï¿½n..."
                               variant="outlined"
                               density="compact"
                               hide-details />
@@ -72,7 +72,7 @@ const snackbar = ref({ show: false, text: "", color: "success" });
 
 const headers = [
     { title: "ID", key: "opcionPreguntaId" },
-    { title: "Texto Opción", key: "textoOpcion" },
+    { title: "Texto Opciï¿½n", key: "textoOpcion" },
     { title: "Orden", key: "orden" },
     { title: "ID Pregunta Filtro", key: "preguntaFiltroId" },
     { title: "Acciones", key: "actions", sortable: false }
@@ -114,21 +114,21 @@ const cerrarModal = () => {
 const handleGuardado = () => {
     cerrarModal();
     const message = modoEditar.value
-        ? "Opción actualizada correctamente."
-        : "Opción creada correctamente.";
+        ? "Opciï¿½n actualizada correctamente."
+        : "Opciï¿½n creada correctamente.";
     showSnackbar(message);
     fetchOpciones();
 };
 
 const eliminarOpcion = async (item) => {
-    if (confirm(`¿Está seguro de eliminar la opción "${item.textoOpcion}"?`)) {
+    if (confirm(`ï¿½Estï¿½ seguro de eliminar la opciï¿½n "${item.textoOpcion}"?`)) {
         try {
             await OpcionPreguntaFiltroService.eliminarOpcionPreguntaFiltro(item.opcionPreguntaId);
-            showSnackbar("Opción eliminada correctamente.");
+            showSnackbar("Opciï¿½n eliminada correctamente.");
             fetchOpciones();
         } catch (error) {
-            console.error("Error al eliminar opción:", error);
-            showSnackbar(error.message || "Error al eliminar la opción.", "error");
+            console.error("Error al eliminar opciï¿½n:", error);
+            showSnackbar(error.message || "Error al eliminar la opciï¿½n.", "error");
         }
     }
 };

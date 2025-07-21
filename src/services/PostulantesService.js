@@ -20,6 +20,7 @@ class PostulantesService {
             throw new Error(error.response?.data?.message || "Error al obtener mis postulaciones");
         }
     }
+    
 
 }
 

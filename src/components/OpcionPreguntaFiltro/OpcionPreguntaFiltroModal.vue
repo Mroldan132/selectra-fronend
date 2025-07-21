@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="visibleLocal" persistent max-width="500px">
+    <v-dialog :model-value="visible" persistent max-width="500px">
         <v-card :loading="loadingForm" class="rounded-lg">
             <v-toolbar :color="modoEditar ? 'warning' : 'primary'" dark flat>
                 <v-toolbar-title>
@@ -18,26 +18,36 @@
                         {{ errorForm }}
                     </v-alert>
 
-                    <v-text-field v-model="formData.textoOpcion"
-                                  label="Texto de la Opción"
-                                  :rules="[rules.required, rules.maxLength(500)]"
-                                  variant="outlined"
-                                  density="comfortable"
-                                  counter="500" />
+                    <v-text-field
+                        v-model="formData.textoOpcion"
+                        label="Texto de la OpciÃ³n"
+                        :rules="[rules.required, rules.maxLength(500)]"
+                        variant="outlined"
+                        density="comfortable"
+                        counter="500"
+                        class="mb-4"
+                    />
 
-                    <v-text-field v-model="formData.orden"
-                                  type="number"
-                                  label="Orden"
-                                  :rules="[rules.nonNegative]"
-                                  variant="outlined"
-                                  density="comfortable" />
+                    <v-text-field
+                        v-model.number="formData.orden"
+                        type="number"
+                        label="Orden"
+                        :rules="[rules.nonNegative]"
+                        variant="outlined"
+                        density="comfortable"
+                        class="mb-4"
+                    />
 
-                    <v-text-field v-model="formData.preguntaFiltroId"
-                                  type="number"
-                                  label="ID Pregunta Filtro"
-                                  :rules="[rules.required]"
-                                  variant="outlined"
-                                  density="comfortable" />
+                    <v-select
+                        v-model="formData.preguntaFiltroId"
+                        :items="preguntasFiltros"
+                        item-title="textoPregunta"
+                        item-value="preguntaFiltroId"
+                        label="Pregunta Filtro Asociada"
+                        :rules="[rules.required]"
+                        variant="outlined"
+                        density="comfortable"
+                    />
                 </v-form>
             </v-card-text>
 
@@ -55,20 +65,22 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch, computed, onMounted } from "vue";
 import OpcionPreguntaFiltroService from "@/services/OpcionPreguntaFiltroService";
+import PreguntasFiltrosService from "@/services/PreguntasFiltrosService";
 
 const props = defineProps({
     visible: Boolean,
     opcionParaEditar: Object,
     modoEditar: Boolean
 });
+
 const emit = defineEmits(["cerrar", "guardado"]);
 
-const visibleLocal = ref(props.visible);
 const loadingForm = ref(false);
 const errorForm = ref("");
 const formRef = ref(null);
+const preguntasFiltros = ref([]);
 
 const getInitialData = () => ({
     opcionPreguntaId: 0,
@@ -80,13 +92,13 @@ const getInitialData = () => ({
 const formData = reactive(getInitialData());
 
 const tituloModal = computed(() =>
-    props.modoEditar ? "Editar Opción de Pregunta Filtro" : "Nueva Opción de Pregunta Filtro"
+    props.modoEditar ? "Editar OpciÃ³n de Pregunta" : "Nueva OpciÃ³n de Pregunta"
 );
 
 const rules = {
     required: (value) => !!value || "Este campo es requerido.",
-    maxLength: (length) => (value) => !value || value.length <= length || `Máximo ${length} caracteres.`,
-    nonNegative: (value) => value >= 0 || "Debe ser un número positivo o cero."
+    maxLength: (length) => (value) => !value || value.length <= length || `MÃ¡ximo ${length} caracteres.`,
+    nonNegative: (value) => value === null || value === undefined || value >= 0 || "Debe ser un nÃºmero positivo o cero."
 };
 
 const guardar = async () => {
@@ -104,7 +116,7 @@ const guardar = async () => {
             }
             emit("guardado");
         } catch (error) {
-            errorForm.value = error.message || "Ocurrió un error al guardar.";
+            errorForm.value = error.message || "OcurriÃ³ un error al guardar.";
             console.error(error);
         } finally {
             loadingForm.value = false;
@@ -117,11 +129,20 @@ const cerrar = () => {
     emit("cerrar");
 };
 
+const cargarPreguntas = async () => {
+    try {
+        preguntasFiltros.value = await PreguntasFiltrosService.obtenerPreguntasFiltros();
+    } catch (error) {
+        console.error("Error al cargar las preguntas filtro:", error);
+        errorForm.value = "No se pudieron cargar las preguntas necesarias.";
+    }
+};
+
 watch(
     () => props.visible,
     (newVal) => {
-        visibleLocal.value = newVal;
         if (newVal) {
+            // Resetear estado cuando el modal se abre
             errorForm.value = "";
             formRef.value?.resetValidation();
             if (props.modoEditar && props.opcionParaEditar) {
@@ -132,4 +153,8 @@ watch(
         }
     }
 );
+
+onMounted(() => {
+    cargarPreguntas();
+});
 </script>

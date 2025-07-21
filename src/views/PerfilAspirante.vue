@@ -172,7 +172,6 @@ const handleCVUpload = async (event) => { /* ... */ };
 const convertToBase64 = (file) => { /* ... */ };
 const previewCV = () => { /* ... */ };
 
-// Función de guardado (sin cambios en su lógica interna)
 const guardarPerfil = async () => {
   errorForm.value = '';
   const { valid } = await formRef.value.validate();
@@ -188,6 +187,7 @@ const guardarPerfil = async () => {
     if (payload.fechaNacimiento instanceof Date) {
         payload.fechaNacimiento = payload.fechaNacimiento.toISOString().slice(0, 10);
     }
+    
     await AspiranteService.updateAspirante(payload.aspiranteId, payload);
     showSnackbar('Perfil actualizado con éxito.');
   } catch (error) {
@@ -199,29 +199,28 @@ const guardarPerfil = async () => {
   }
 };
 
-// --- Ciclo de Vida: onMounted (sin cambios) ---
-onMounted(async () => {
-  loadingForm.value = true;
-  try {
-    const [tiposDocData, nivelesAcaData] = await Promise.all([
-      DatosPersonalesService.getTiposDocumento(),
-      NivelAcademicosService.obtenerNivelAcademicos()
-    ]);
-    tiposDocumento.value = tiposDocData;
-    nivelesAcademicos.value = nivelesAcaData;
+  onMounted(async () => {
+    loadingForm.value = true;
+    try {
+      const [tiposDocData, nivelesAcaData] = await Promise.all([
+        DatosPersonalesService.getTiposDocumento(),
+        NivelAcademicosService.obtenerNivelAcademicos()
+      ]);
+      tiposDocumento.value = tiposDocData;
+      nivelesAcademicos.value = nivelesAcaData;
 
-    const aspiranteData = await AspiranteService.getAspiranteById(1); 
-    Object.assign(formData, aspiranteData);
-    if (aspiranteData.fechaNacimiento) {
-      formData.fechaNacimiento = new Date(aspiranteData.fechaNacimiento);
+      const aspiranteData = await AspiranteService.getAspiranteById(1); 
+      Object.assign(formData, aspiranteData);
+      if (aspiranteData.fechaNacimiento) {
+        formData.fechaNacimiento = new Date(aspiranteData.fechaNacimiento);
+      }
+      formData.rolId = 1;
+    } catch (error) {
+        console.error("Error al cargar los datos del perfil:", error);
+        errorForm.value = "No se pudieron cargar los datos de tu perfil.";
+        showSnackbar(errorForm.value, 'error');
+    } finally {
+        loadingForm.value = false;
     }
-    formData.rolId = 1;
-  } catch (error) {
-      console.error("Error al cargar los datos del perfil:", error);
-      errorForm.value = "No se pudieron cargar los datos de tu perfil.";
-      showSnackbar(errorForm.value, 'error');
-  } finally {
-      loadingForm.value = false;
-  }
-});
+  });
 </script>

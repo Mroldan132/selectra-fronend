@@ -20,14 +20,6 @@
           class="mr-4"
           style="max-width: 300px;"
         ></v-text-field>
-        <!-- <v-btn
-          color="primary"
-          variant="tonal"
-          @click="abrirNuevaOferta"
-          prepend-icon="mdi-briefcase-plus-outline"
-        >
-          Nueva Oferta
-        </v-btn> -->
       </v-toolbar>
 
       <v-divider></v-divider>
@@ -44,6 +36,8 @@
           class="transparent-table"
           show-expand
           hover
+          @click:row="onRowClick"
+          :style="{ cursor: 'pointer' }"
         >
           <template #loading>
             <v-skeleton-loader type="table-row@7"></v-skeleton-loader>
@@ -60,7 +54,7 @@
           </template>
           
           <template #item.fechaCreacion="{ value }">
-             <v-tooltip location="top">
+            <v-tooltip location="top">
               <template #activator="{ props }">
                 <span v-bind="props">{{ formatRelativeDate(value) }}</span>
               </template>
@@ -76,24 +70,18 @@
                 </template>
                 <span>Editar</span>
               </v-tooltip>
-                <v-tooltip location="top">
+              <v-tooltip location="top">
                 <template #activator="{ props }">
                   <v-btn
-                  icon="mdi-arrow-right"
-                  variant="text"
-                  color="primary"
-                  v-bind="props"
-                  @click.stop="toggleEstadoOferta(item)"
-                  :disabled="item.countPostulantes === 0 && item.estadoOferta !== 'Pendiente'"
+                    icon="mdi-arrow-right"
+                    variant="text"
+                    color="primary"
+                    v-bind="props"
+                    @click.stop="toggleEstadoOferta(item)"
+                    :disabled="item.countPostulantes === 0 && item.estadoOferta !== 'Pendiente'"
                   ></v-btn>
                 </template>
                 <span>Siguiente estado</span>
-                </v-tooltip>
-               <v-tooltip location="top">
-                <template #activator="{ props }">
-                   <v-btn icon="mdi-delete-outline" variant="text" color="error" v-bind="props" @click.stop="abrirDialogoEliminar(item)"></v-btn>
-                </template>
-                <span>Eliminar</span>
               </v-tooltip>
             </div>
           </template>
@@ -102,24 +90,85 @@
             <tr>
               <td :colspan="columns.length" class="pa-0">
                 <v-card flat color="grey-lighten-5" class="ma-3 rounded-lg">
-                   <v-card-text>
-                      <v-row>
-                           <v-col cols="6">
-                              <div class="text-caption text-grey">Descripción</div>
-                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.descripcion || 'No especificados.' }}</p>
+                  <v-card-text>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <div class="text-caption text-grey">Descripción</div>
+                        <p class="text-body-2" style="white-space: pre-wrap;">{{ item.descripcion || 'No especificados.' }}</p>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <div class="text-caption text-grey">N° de personas postuladas</div>
+                        <p class="text-body-2">{{ item.countPostulantes || 'No existe postulantes.' }}</p>
+                      </v-col>
+                    </v-row>
+
+                    <v-divider class="my-4"></v-divider>
+
+                    <div>
+                      <div class="text-subtitle-1 font-weight-bold mb-2">
+                        <v-icon class="mr-1" size="small">mdi-account-check-outline</v-icon>
+                        Aspirantes Seleccionados
+                      </div>
+
+                      <div v-if="loadingAspirantes" class="text-center pa-4">
+                        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+                        <p class="text-caption mt-2">Cargando aspirantes...</p>
+                      </div>
+
+                      <div v-else>
+                        <div v-if="!aspirantesSeleccionados.length" class="text-center text-grey-darken-1 pa-4">
+                          No hay aspirantes seleccionados para esta oferta.
+                        </div>
+
+                        <v-row v-else>
+                          <v-col v-for="aspirante in aspirantesSeleccionados" :key="aspirante.postulanteId" cols="12" md="6">
+                            <v-card variant="outlined" rounded="lg">
+                              <v-card-title class="text-body-1 font-weight-medium d-flex justify-space-between align-center">
+                                <span>{{ aspirante.nombrePostulante }}</span>
+                                <v-btn
+                                  variant="tonal"
+                                  color="primary"
+                                  size="small"
+                                  prepend-icon="mdi-download"
+                                  @click="descargarCvAspirante(aspirante.aspitateId)"
+                                  :loading="downloadingCvId === aspirante.aspitateId"
+                                >
+                                  CV
+                                </v-btn>
+                              </v-card-title>
+                              <v-divider></v-divider>
+                              <v-card-text class="pt-2">
+                                <div class="text-caption text-grey mb-2">Cuestionario</div>
+                                <div v-for="(qa, index) in aspirante.respuestas" :key="index" class="mb-3">
+                                  <p class="text-body-2 font-weight-bold">{{ qa.pregunta }}</p>
+                                  <p class="text-body-2 pl-2">- {{ qa.respuesta }}</p>
+                                </div>
+                              </v-card-text>
+
+                              <v-card-actions v-if="item.estadoOferta !== 'Cerrada'">
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                  color="success"
+                                  variant="elevated"
+                                  prepend-icon="mdi-account-check"
+                                  @click="contratar(item, aspirante)"
+                                  :loading="hiringAspiranteId === aspirante.aspitateId"
+                                >
+                                  Contratar
+                                </v-btn>
+                              </v-card-actions>
+                              </v-card>
                           </v-col>
-                          <v-col cols="6">
-                              <div class="text-caption text-grey">N° de personas postuladas</div>
-                              <p class="text-body-2" style="white-space: pre-wrap;">{{ item.countPostulantes || 'No existe postulantes.' }}</p>
-                          </v-col>
-                      </v-row>
-                   </v-card-text>
+                        </v-row>
+                      </div>
+                    </div>
+                  </v-card-text>
                 </v-card>
               </td>
             </tr>
           </template>
-
-           <template #no-data>
+          
+          <template #no-data>
             <div class="d-flex flex-column align-center justify-center pa-10">
               <v-icon size="60" color="grey-lighten-1">mdi-briefcase-off-outline</v-icon>
               <h5 class="text-h5 mt-4 text-grey-darken-1">No hay ofertas creadas</h5>
@@ -138,20 +187,6 @@
       @error="onOfertaError"
     />
 
-     <v-dialog v-model="dialogDelete" max-width="500px">
-      <v-card rounded="xl">
-        <v-card-title class="text-h5 d-flex align-center"><v-icon color="warning" class="mr-2">mdi-alert-circle-outline</v-icon>Confirmar Acción</v-card-title>
-        <v-card-text>
-          ¿Estás seguro de que deseas eliminar la oferta <strong>{{ itemToDelete?.titulo }}</strong>?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="cerrarDialogoEliminar">Cancelar</v-btn>
-          <v-btn color="error" variant="tonal" @click="eliminarOfertaConfirmado" :loading="deleting">Eliminar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="4000" location="top right" variant="elevated">
       {{ snackbar.text }}
       <template #actions>
@@ -164,6 +199,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import OfertasLaboralesService from '@/services/OfertasLaboralesService';
+import AspiranteService from '@/services/AspiranteService';
+import PostulantesService from '@/services/PostulantesService'; // <-- IMPORTAR SERVICIO
 import FormCrearOfertaLaboralModal from '@/components/ofertasLaborales/FormCrearOfertaLaboralModal.vue';
 
 // --- State ---
@@ -173,17 +210,17 @@ const modalVisible = ref(false);
 const ofertaSeleccionada = ref(null);
 const search = ref('');
 const expanded = ref([]);
-const dialogDelete = ref(false);
-const itemToDelete = ref(null);
-const deleting = ref(false);
-
 const snackbar = ref({ show: false, text: '', color: 'success' });
+const aspirantesSeleccionados = ref([]);
+const loadingAspirantes = ref(false);
+const downloadingCvId = ref(null);
+const hiringAspiranteId = ref(null); // <-- NUEVO ESTADO DE CARGA
 
 // --- Headers ---
 const headers = [
   { title: 'Título de la Oferta', key: 'titulo', sortable: true, minWidth: '300px' },
   { title: 'Área', key: 'area', sortable: true },
-  { title: 'Sueldo', key: 'sueldo', sortable: true, align: 'end' },
+  { title: 'Sueldo', key: 'sueldoOfrecido', sortable: true, align: 'end' },
   { title: 'Estado', key: 'estadoOferta', sortable: true, align: 'center' },
   { title: 'Fecha de Creación', key: 'fechaCreacion', sortable: true },
   { title: 'Acciones', key: 'acciones', sortable: false, align: 'center', width: '150px' },
@@ -237,19 +274,79 @@ const onOfertaError = (msg) => {
 };
 
 const editarOferta = async (oferta) => {
-  
-  ofertaSeleccionada.value = await OfertasLaboralesService.detalleOfertaLaboral(oferta.ofertaLaboralId) ;
+  ofertaSeleccionada.value = await OfertasLaboralesService.detalleOfertaLaboral(oferta.ofertaLaboralId);
   modalVisible.value = true;
 };
 
-const abrirNuevaOferta = () => {
-  ofertaSeleccionada.value = null;
-  modalVisible.value = true;
+const descargarCvAspirante = async (aspiranteId) => {
+  if (!aspiranteId) return;
+  
+  downloadingCvId.value = aspiranteId;
+  try {
+    await AspiranteService.descargarCV(aspiranteId);
+  } catch (error) {
+    showSnackbar(error.message || 'Error al descargar el CV', 'error');
+    console.error(error);
+  } finally {
+    downloadingCvId.value = null;
+  }
+};
+
+// ***** INICIO: NUEVA FUNCIÓN PARA CONTRATAR *****
+const contratar = async (oferta, aspirante) => {
+  const confirmado = window.confirm(
+    `¿Estás seguro de que deseas contratar a "${aspirante.nombrePostulante}" para la oferta "${oferta.titulo}"? Esta acción cerrará la oferta.`
+  );
+
+  if (!confirmado) {
+    return;
+  }
+
+  hiringAspiranteId.value = aspirante.aspitateId;
+  try {
+    // Usamos el servicio que ya creaste
+    await OfertasLaboralesService.contratarAspirante(oferta.ofertaLaboralId, aspirante.aspitateId);
+    showSnackbar('¡Aspirante contratado con éxito! La oferta ha sido cerrada.', 'success');
+    
+    // Recargamos los datos para que se refleje el nuevo estado
+    expanded.value = []; // Cierra la fila expandida
+    await cargarOfertas();
+
+  } catch (error) {
+    showSnackbar(error.message || 'Ocurrió un error al intentar contratar.', 'error');
+    console.error(error);
+  } finally {
+    hiringAspiranteId.value = null;
+  }
+};
+// ***** FIN: NUEVA FUNCIÓN PARA CONTRATAR *****
+
+const cargarAspirantesDeFila = async (item) => {
+  loadingAspirantes.value = true;
+  aspirantesSeleccionados.value = [];
+  try {
+    const data = await OfertasLaboralesService.getAspirantesSeleccionados(item.ofertaLaboralId);
+    aspirantesSeleccionados.value = data;
+  } catch (error) {
+    showSnackbar('Error al cargar los aspirantes seleccionados', 'error');
+  } finally {
+    loadingAspirantes.value = false;
+  }
+};
+
+const onRowClick = (event, { item }) => {
+  const id = item.ofertaLaboralId;
+  const index = expanded.value.indexOf(id);
+
+  if (index > -1) {
+    expanded.value.splice(index, 1);
+  } else {
+    expanded.value = [id];
+    cargarAspirantesDeFila(item);
+  }
 };
 
 const toggleEstadoOferta = async (oferta) => {
-  console.log(oferta.ofertaLaboralId)
-
   if (!oferta || !oferta.ofertaLaboralId) {
     showSnackbar('Oferta no válida.', 'error');
     return;
@@ -264,34 +361,6 @@ const toggleEstadoOferta = async (oferta) => {
       console.error('Error al cambiar el estado de la oferta:', error);
       showSnackbar('Error al cambiar el estado de la oferta.', 'error');
     });
-};
-
-const abrirDialogoEliminar = (item) => {
-  itemToDelete.value = item;
-  dialogDelete.value = true;
-};
-
-const cerrarDialogoEliminar = () => {
-  dialogDelete.value = false;
-  setTimeout(() => { itemToDelete.value = null }, 300);
-};
-
-const eliminarOfertaConfirmado = async () => {
-  if (!itemToDelete.value) return;
-  deleting.value = true;
-  try {
-    // Lógica real de eliminación:
-    // await OfertasLaboralesService.delete(itemToDelete.value.ofertaLaboralId);
-    showSnackbar(`Oferta "${itemToDelete.value.titulo}" eliminada.`, 'warning');
-    // Para simulación:
-     const index = ofertas.value.findIndex(o => o.ofertaLaboralId === itemToDelete.value.ofertaLaboralId);
-    if(index > -1) ofertas.value.splice(index, 1);
-    cerrarDialogoEliminar();
-  } catch(error) {
-    showSnackbar('Error al eliminar la oferta.', 'error');
-  } finally {
-    deleting.value = false;
-  }
 };
 
 onMounted(cargarOfertas);

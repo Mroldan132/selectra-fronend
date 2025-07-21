@@ -81,5 +81,45 @@ class OfertasLaboralesService {
             throw new Error(error.response?.data?.message || "Error al cargar lista de ofertas laborales públicas");
         }
     }
+    async getListaPreguntasOfertaLaboral(ofertaId) {
+        try {
+            const response = await apiClient.get(`/OfertasLaborales/preguntasOfertaLaboral/${ofertaId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener lista de preguntas de la oferta laboral:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar lista de preguntas de la oferta laboral");
+        }
+    }
+
+    async registrarRespuestaPreguntaAspirante(ofertaId,respuestas) {
+        try {
+            const response = await apiClient.post(`/OfertasLaborales/registrarRespuestasPostulantes/${ofertaId}`, respuestas);
+            return response.data;
+        } catch (error) {
+            console.error("Error al registrar respuesta de pregunta del aspirante:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al registrar respuesta de pregunta del aspirante");
+        }
+
+    }
+
+    async getAspirantesSeleccionados(ofertaId) {
+        try {
+            const response = await apiClient.get(`/OfertasLaborales/aspirantesSeleccionados/${ofertaId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener aspirantes seleccionados:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al cargar lista de aspirantes seleccionados");
+        }
+    }
+    async contratarAspirante(ofertaId,aspiranteId) {
+        try {
+            const response = await apiClient.put(`/Postulantes/contratarPostualante/${ofertaId}/${aspiranteId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al contratar aspirante:", error.response || error);
+            throw new Error(error.response?.data?.message || "Error al contratar aspirante");
+        }
+    }
+    
 }
 export default new OfertasLaboralesService();
